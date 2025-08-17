@@ -11,6 +11,7 @@ class StubSmsService(MessagingPort):
     
     def __init__(self):
         self.counter = 0
+        self.failed_messages = set()  # Track failed message hashes
     
     async def initialize(self, config: BaseConfig) -> None:
         """Initialize the stub service"""
@@ -22,11 +23,33 @@ class StubSmsService(MessagingPort):
         print(f"Shutting down {self.name} stub incoming service")
     
     async def send_message(self, message: Message) -> None:
-        """Not implemented for incoming-only service"""
+        """Simulate sending a message with failure simulation capabilities.
+        
+        Messages containing trigger words ('fail', 'error', 'crash', 'exception')
+        will fail on their first attempt but succeed on subsequent retries.
+        This simulates transient failures common in messaging systems.
+        
+        Args:
+            message: The message to send
+            
+        Raises:
+            RuntimeError: On first attempt when message contains trigger words
+        """
         print(f"\n{self.name} sending message:")
         print(f"From: {message.sender}")
         print(f"To: {[d.address for d in message.destinations]}")
         print(f"Content: {message.content}\n")
+
+        # Generate a unique message identifier based on content and destinations
+        msg_hash = hash((message.content, tuple(d.address for d in message.destinations)))
+
+        # Check if message contains trigger words and hasn't failed before
+        failure_triggers = ['fail', 'error', 'crash', 'exception']
+        if any(trigger in message.content.lower() for trigger in failure_triggers):
+            if msg_hash not in self.failed_messages:
+                # First attempt - fail and record the failure
+                self.failed_messages.add(msg_hash)
+                raise RuntimeError("Message delivery failed on first attempt - retry should succeed")
 
 
     async def get_message(self) -> Message:
