@@ -73,26 +73,99 @@ The daemon will:
 
 Press Ctrl+C to stop the daemon.
 
+## Configuration
+
+The gateway can be configured through a JSON configuration file:
+
+```json
+{
+  "queue_size": 1000,
+  "services": {
+    "sms": {
+      "name": "sms",
+      "type": "modem",
+      "port": "/dev/ttyUSB0",
+      "baud_rate": 115200
+    },
+    "telegram": {
+      "name": "telegram",
+      "type": "bot",
+      "token": "your-bot-token"
+    },
+    "email": {
+      "name": "email",
+      "type": "smtp",
+      "host": "smtp.example.com",
+      "port": 587,
+      "username": "user@example.com",
+      "password": "password"
+    }
+  }
+}
+```
+
+## Testing
+
+The project includes comprehensive tests for all components:
+
+```bash
+# Run all tests
+pytest
+
+# Run specific test file
+pytest tests/services/test_sms.py
+
+# Run with coverage
+pytest --cov=sms_gateway
+```
+
+Test structure:
+- Unit tests for core services
+- Integration tests for service combinations
+- Mock adapters for external services
+- Memory queue tests for message handling
+
 ## Dependencies
 
 Core dependencies:
 - pydantic: Data validation using Python type annotations
 - typing-extensions: Additional typing support
+- aiohttp: Async HTTP client/server
+- pyserial-asyncio: Async serial port support
 
 Development dependencies:
 - pytest: Testing framework
+- pytest-asyncio: Async test support
+- pytest-cov: Coverage reporting
 - black: Code formatter
 - mypy: Static type checker
 - ruff: Fast Python linter
 
-## Current Features
+## Service Architecture
 
-- Clean architecture with ports and adapters pattern
-- In-memory message queue implementation
-- Stub services for testing
-- Structured logging
-- Support for multiple adapters (SMS, Telegram, Email)
-- Separate incoming and outgoing message flows
+The gateway implements a message broker pattern with:
+
+1. Message Services
+   - Base message handling service
+   - Protocol-specific services (SMS, Telegram, Email)
+   - Bi-directional message routing
+
+2. Message Queues
+   - In-memory async queue implementation
+   - Configurable queue size
+   - Message streaming support
+
+3. Adapters
+   - Protocol adapters for each service type
+   - Stub services for testing
+   - Memory queue adapters
+
+4. Features
+   - Clean architecture with ports and adapters pattern
+   - Structured logging and error handling
+   - Support for multiple messaging protocols
+   - Separate incoming and outgoing message flows
+   - Async/await for efficient I/O handling
 
 ## Architecture
 

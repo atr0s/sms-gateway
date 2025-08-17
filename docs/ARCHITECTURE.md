@@ -75,17 +75,100 @@ graph TD
     B --> J[Queue Implementation]
 ```
 
-## Message Flow
+## Message Service Implementation
 
-1. Message received through any adapter
-2. Message converted to domain model
-3. Message enqueued for processing
-4. Message processor dequeues message
-5. Appropriate messaging port selected based on destination
-6. Message sent through selected port
+### Base Message Service
 
-This architecture ensures:
+The [`MessageService`](../sms_gateway/services/base.py) class provides core message handling functionality:
+
+1. Message Reception:
+   - Continuously monitors configured ports
+   - Validates and normalizes incoming messages
+   - Routes messages to appropriate queues
+
+2. Message Processing:
+   - Dequeues messages for processing
+   - Attempts delivery through available ports
+   - Implements retry logic for failed deliveries
+   - Handles errors and logging
+
+3. Port Management:
+   - Maintains list of active messaging ports
+   - Handles port initialization and shutdown
+   - Monitors port health and status
+
+### Service-Specific Implementations
+
+Service implementations extend the base MessageService:
+
+1. SMS Service:
+   - Handles GSM modem communication
+   - Manages message delivery status
+   - Monitors signal strength
+
+2. Telegram Service:
+   - Manages bot sessions
+   - Handles chat updates
+   - Supports media messages
+
+3. Email Service:
+   - Manages SMTP connections
+   - Handles attachments
+   - Supports HTML content
+
+## Queue System
+
+The queue system uses an async implementation based on [`asyncio.Queue`](../sms_gateway/adapters/queues/memory.py):
+
+1. Core Features:
+   - Asynchronous message handling
+   - Configurable queue size
+   - Non-blocking operations
+
+2. Queue Operations:
+   - enqueue(): Add message with overflow protection
+   - dequeue(): Retrieve message with empty handling
+   - stream(): Async iterator for continuous processing
+
+3. State Management:
+   - Size monitoring
+   - Empty/full state detection
+   - Error handling for edge cases
+
+## Message Flow Details
+
+1. Incoming Flow:
+   ```mermaid
+   sequenceDiagram
+       participant A as Adapter
+       participant S as Service
+       participant Q as Queue
+       
+       A->>S: New Message
+       S->>S: Validate Message
+       S->>Q: Enqueue
+       Q->>S: Dequeue
+       S->>A: Send via Port
+   ```
+
+2. Processing Steps:
+   a. Message received via adapter
+   b. Service validates and normalizes
+   c. Message enqueued to outgoing queue
+   d. Processing service dequeues
+   e. Port selection based on message type
+   f. Delivery attempt with retry logic
+
+3. Error Handling:
+   - Port failures trigger retries
+   - Queue overflow protection
+   - Logging at each step
+   - Error reporting to monitoring
+
+This architecture provides:
 - Clean separation of concerns
-- Easy addition of new messaging services
+- Easy addition of new services
 - Type-safe message handling
 - Flexible message routing
+- Robust error handling
+- Efficient async processing
