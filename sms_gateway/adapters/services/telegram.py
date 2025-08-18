@@ -83,17 +83,17 @@ class TelegramAdapter(MessagingPort):
         except Exception as e:
             self.logger.error(f"Failed to send message to {self.config.chat_id}: {e}")
                 
-    async def get_message(self) -> Message:
+    async def get_message(self) -> Optional[Message]:
         """
         Get a single message from the queue
         
         Returns:
-            The next message in the queue
-            
-        Raises:
-            QueueEmpty: If no messages are available
+            The next message in the queue, or None if no messages are available
         """
-        return self._message_queue.get_nowait()
+        try:
+            return self._message_queue.get_nowait()
+        except asyncio.QueueEmpty:
+            return None
     
     async def _handle_sms_command(
         self,

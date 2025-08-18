@@ -146,6 +146,6 @@ async def test_handle_invalid_phone_number(telegram_adapter: TelegramAdapter):
 
 @pytest.mark.asyncio(scope="function")
 async def test_get_message_when_empty(telegram_adapter: TelegramAdapter):
-    """Test getting message from empty queue raises exception"""
-    with pytest.raises(asyncio.QueueEmpty):
-        await telegram_adapter.get_message()
+    """Test getting message from empty queue returns None"""
+    message = await telegram_adapter.get_message()
+    assert message is None

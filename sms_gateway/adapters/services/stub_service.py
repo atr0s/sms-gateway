@@ -1,6 +1,6 @@
 import random
 import asyncio
-from typing import Iterator
+from typing import Iterator, Optional
 from sms_gateway.domain.models import (
     Message, BaseConfig, Destination, MessageType,
 )
@@ -52,15 +52,12 @@ class StubSmsService(MessagingPort):
                 raise RuntimeError("Message delivery failed on first attempt - retry should succeed")
 
 
-    async def get_message(self) -> Message:
+    async def get_message(self) -> Optional[Message]:
         """
         Randomly generate incoming message with 1/10 probability
         
         Returns:
-            A randomly generated message
-            
-        Raises:
-            QueueEmpty: If no message is generated
+            A randomly generated message, or None if no message is generated
         """
         # 1 in 10 chance of receiving a message
         if random.random() < 0.1:
@@ -75,6 +72,6 @@ class StubSmsService(MessagingPort):
                 ],
                 sender=f"+1555{random.randint(1000000,9999999)}"
             )
-        raise asyncio.QueueEmpty
+        return None
 
 
