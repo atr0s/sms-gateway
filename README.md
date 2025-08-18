@@ -132,6 +132,7 @@ Core dependencies:
 - typing-extensions: Additional typing support
 - aiohttp: Async HTTP client/server
 - pyserial-asyncio: Async serial port support
+- async-gsm-modem: Async interface for GSM modems (SMS)
 
 Development dependencies:
 - pytest: Testing framework

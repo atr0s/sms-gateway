@@ -1,4 +1,4 @@
-from typing import Protocol, Iterator
+from typing import Protocol, Iterator, Optional
 from sms_gateway.domain.models import Message, BaseConfig
 
 class MessagingPort(Protocol):
@@ -16,15 +16,16 @@ class MessagingPort(Protocol):
         """
         ...
         
-    async def get_message(self) -> Message:
+    async def get_message(self) -> Optional[Message]:
         """
         Get a single message from this service
         
         Returns:
-            A received message
+            A received message, or None if no messages are available
             
         Raises:
             MessagingError: If receiving fails
+            RuntimeError: If service is not initialized
         """
         ...
         

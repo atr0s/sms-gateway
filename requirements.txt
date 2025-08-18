@@ -1,6 +1,7 @@
 pydantic>=2.5.0
 typing-extensions>=4.8.0
 python-telegram-bot>=20.0.0
+async-gsm-modem>=0.1.0
 
 # Development dependencies
 pytest>=7.4.0

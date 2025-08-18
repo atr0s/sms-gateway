@@ -36,9 +36,10 @@ Located in `sms_gateway/ports/messaging.py`:
 Located in `sms_gateway/ports/protocols/`:
 
 - `SMSPort`: GSM modem messaging capabilities
-  - Modem control and status monitoring
-  - Signal strength checking
-  - Hardware information retrieval
+  - Asynchronous modem control through async-gsm-modem
+  - Message sending and receiving with cleanup
+  - Automatic message queue management
+  - Signal strength and modem status monitoring
 
 - `TelegramPort`: Telegram bot messaging capabilities
   - Chat management and information
@@ -102,9 +103,10 @@ The [`MessageService`](../sms_gateway/services/base.py) class provides core mess
 Service implementations extend the base MessageService:
 
 1. SMS Service:
-   - Handles GSM modem communication
-   - Manages message delivery status
-   - Monitors signal strength
+   - Handles GSM modem communication through async-gsm-modem library
+   - Manages message delivery status and cleanup
+   - Monitors signal strength and modem state
+   - Supports sending and receiving SMS messages
 
 2. Telegram Service:
    - Manages bot sessions
