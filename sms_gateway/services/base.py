@@ -49,8 +49,6 @@ class MessageService:
                     f"Service: {self.name} | "
                     f"To: {route_to}"
                 )
-            except asyncio.QueueEmpty:
-                pass
             except Exception as e:
                 error_msg = f"Error processing {self.name} message via {port.name}: {e}"
                 self.logger.error(error_msg)
