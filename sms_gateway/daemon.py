@@ -1,23 +1,23 @@
 import argparse
 import asyncio
-from typing import List, Type
+from typing import List
 from pathlib import Path
 
 from sms_gateway.ports.messaging import MessagingPort
 from sms_gateway.ports.message_queue import MessageQueuePort
 from sms_gateway.adapters.queues.memory import AsyncInMemoryMessageQueue
-from sms_gateway.adapters.services.telegram import TelegramAdapter
-from sms_gateway.adapters.services.stub_service import StubSmsService
-from sms_gateway.adapters.services.gsm_modem import GsmModemAdapter
-from sms_gateway.domain.models import (
-    SMSGatewayConfig,
-    BaseConfig, 
-    QueueConfig
-)
+from sms_gateway.domain.models import SMSGatewayConfig, QueueConfig
 from sms_gateway.common.logging import get_logger
 from sms_gateway.config import load_config, get_default_config_path
 from sms_gateway.services.sms import SMSService
 from sms_gateway.services.integration import IntegrationService
+from sms_gateway.adapters.services.registry import AdapterRegistry, AdapterType
+
+# Import adapters to ensure registration
+# We need to explicitly import so the decorators are executed
+from sms_gateway.adapters.services.stub_service import StubSmsService
+from sms_gateway.adapters.services.gsm_modem import GsmModemAdapter
+from sms_gateway.adapters.services.telegram import TelegramAdapter
 
 class SMSGatewayDaemon:
     """
@@ -104,31 +104,38 @@ class SMSGatewayDaemon:
         """
         self.logger.info(f"Starting SMS Gateway daemon ({self.config.name})...")
         
-        # Initialize SMS adapters
-        # Initialize SMS adapters
-        if self.config.sms.stub:
-            await self._init_adapters(
-                configs=self.config.sms.stub,
-                adapter_class=StubSmsService,
-                port_list=self.sms_ports,
-                service_type="SMS"
-            )
-            
-        if self.config.sms.gsm_modem:
-            await self._init_adapters(
-                configs=self.config.sms.gsm_modem,
-                adapter_class=GsmModemAdapter,
-                port_list=self.sms_ports,
-                service_type="SMS"
-            )
-
-        # Initialize integration adapters
-        if self.config.integration.telegram:
-            await self._init_adapters(
-                configs=self.config.integration.telegram,
-                adapter_class=TelegramAdapter,
-                port_list=self.integration_ports,
-                service_type="integration"
+        # Log registered adapters for debugging
+        sms_adapters = AdapterRegistry._adapters.get(AdapterType.SMS, {}).keys()
+        integration_adapters = AdapterRegistry._adapters.get(AdapterType.INTEGRATION, {}).keys()
+        self.logger.info(f"Registered SMS adapters: {list(sms_adapters)}")
+        self.logger.info(f"Registered integration adapters: {list(integration_adapters)}")
+        
+        # Initialize SMS adapters using registry
+        sms_configs = {
+            "stub": self.config.sms.stub or [],
+            "gsm_modem": self.config.sms.gsm_modem or []
+        }
+        
+        # Log configured adapters
+        self.logger.info(f"Configured SMS adapters: {list(sms_configs.keys())}")
+        self.sms_ports.extend(
+            await AdapterRegistry.create_adapters(AdapterType.SMS, sms_configs)
+        )
+        
+        # Initialize integration adapters using registry
+        integration_configs = {
+            "telegram": self.config.integration.telegram or []
+        }
+        
+        # Log configured adapters
+        self.logger.info(f"Configured integration adapters: {list(integration_configs.keys())}")
+        self.integration_ports.extend(
+            await AdapterRegistry.create_adapters(AdapterType.INTEGRATION, integration_configs)
+        )
+        
+        if not self.sms_ports and not self.integration_ports:
+            self.logger.warning(
+                "No adapters were initialized. Check configuration and adapter registration."
             )
             
         # Log initialization status
@@ -137,31 +144,6 @@ class SMSGatewayDaemon:
         self.logger.info(f"- {len(self.integration_ports)} integration adapters")
         self.logger.info(f"Poll delay: {self.config.runtime.poll_delay} seconds")
         
-    async def _init_adapters(
-        self,
-        configs: List[BaseConfig],
-        adapter_class: Type[MessagingPort],
-        port_list: List[MessagingPort],
-        service_type: str
-    ) -> None:
-        """
-        Initialize a set of adapters with given configurations
-        
-        Args:
-            configs: List of adapter configurations
-            adapter_class: Class to instantiate adapters
-            port_list: List to add initialized adapters to
-            service_type: Type of service for logging
-        """
-        for config in configs:
-            try:
-                adapter = adapter_class()
-                await adapter.initialize(config)
-                port_list.append(adapter)
-                self.logger.info(f"Initialized {service_type} adapter: {config.name}")
-            except Exception as e:
-                self.logger.error(f"Failed to initialize {service_type} adapter {config.name}: {e}")
-
     async def shutdown(self) -> None:
         """
         Gracefully shutdown all services and adapters

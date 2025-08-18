@@ -1,14 +1,18 @@
 from typing import Optional
 from sms_gateway.domain.models import Message, GSMModemConfig
 from sms_gateway.ports.messaging import MessagingPort
+from sms_gateway.adapters.services.registry import AdapterRegistry, AdapterType
+from sms_gateway.common.logging import get_logger
 from async_gsm_modem.base import ATModem as GsmModem
 
+@AdapterRegistry.register(AdapterType.SMS, "gsm_modem")
 class GsmModemAdapter(MessagingPort):
     """Adapter for GSM modem using async-gsm-modem library"""
     
     def __init__(self):
         self.name = ""
         self.modem: GsmModem | None = None
+        self.logger = get_logger("gsm_modem")
         
     async def initialize(self, config: GSMModemConfig) -> None:
         """Initialize the GSM modem with provided configuration
@@ -26,12 +30,14 @@ class GsmModemAdapter(MessagingPort):
             pin=config.pin
         )
         await self.modem.connect()
+        self.logger.info(f"Initialized GSM modem {self.name} on port {config.port}")
         
     async def shutdown(self) -> None:
         """Cleanup and shutdown the modem connection"""
         if self.modem:
             await self.modem.disconnect()
             self.modem = None
+            self.logger.info(f"GSM modem {self.name} disconnected")
 
     async def send_message(self, message: Message) -> None:
         """Send SMS message through the GSM modem
@@ -48,10 +54,21 @@ class GsmModemAdapter(MessagingPort):
             
         # Send to all SMS destinations
         for destination in message.destinations:
-            await self.modem.send_sms(
-                destination.address,
-                message.content
-            )
+            try:
+                await self.modem.send_sms(
+                    destination.address,
+                    message.content
+                )
+                self.logger.info(
+                    f"Sent SMS via {self.name} | To: {destination.address} | "
+                    f"Content: {message.content[:30]}..."
+                )
+            except Exception as e:
+                self.logger.error(
+                    f"Failed to send SMS via {self.name} | "
+                    f"To: {destination.address} | Error: {e}"
+                )
+                raise
         
     async def get_message(self) -> Optional[Message]:
         """Get a single SMS message from the modem
@@ -74,6 +91,11 @@ class GsmModemAdapter(MessagingPort):
         # Get and delete the first message
         sms = messages[0]
         await self.modem.delete_message(sms.index)
+        
+        self.logger.info(
+            f"Received SMS via {self.name} | From: {sms.number} | "
+            f"Content: {sms.text[:30]}..."
+        )
         
         # Convert to our Message format
         return Message(

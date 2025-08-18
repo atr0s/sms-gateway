@@ -1,26 +1,36 @@
 import random
-import asyncio
-from typing import Iterator, Optional
+from typing import Optional
 from sms_gateway.domain.models import (
-    Message, BaseConfig, Destination, MessageType,
+    Message, StubConfig, Destination, MessageType,
 )
 from sms_gateway.ports.messaging import MessagingPort
+from sms_gateway.adapters.services.registry import AdapterRegistry, AdapterType
+from sms_gateway.common.logging import get_logger
 
+@AdapterRegistry.register(AdapterType.SMS, "stub")
 class StubSmsService(MessagingPort):
     """Stub implementation that randomly generates incoming messages"""
     
     def __init__(self):
         self.counter = 0
         self.failed_messages = set()  # Track failed message hashes
+        self.name = ""
+        self.message_probability = 0.1
+        self.logger = get_logger("stub_service")
     
-    async def initialize(self, config: BaseConfig) -> None:
-        """Initialize the stub service"""
+    async def initialize(self, config: StubConfig) -> None:
+        """Initialize the stub service
+        
+        Args:
+            config: Configuration for the stub service
+        """
         self.name = config.name
-        print(f"Initialized {self.name} stub incoming service")
+        self.message_probability = config.message_probability
+        self.logger.info(f"Initialized {self.name} stub service with probability {self.message_probability}")
     
     async def shutdown(self) -> None:
         """Shutdown the stub service"""
-        print(f"Shutting down {self.name} stub incoming service")
+        self.logger.info(f"Shutting down {self.name} stub service")
     
     async def send_message(self, message: Message) -> None:
         """Simulate sending a message with failure simulation capabilities.
@@ -35,10 +45,11 @@ class StubSmsService(MessagingPort):
         Raises:
             RuntimeError: On first attempt when message contains trigger words
         """
-        print(f"\n{self.name} sending message:")
-        print(f"From: {message.sender}")
-        print(f"To: {[d.address for d in message.destinations]}")
-        print(f"Content: {message.content}\n")
+        self.logger.info(
+            f"Sending message via {self.name} | From: {message.sender} | "
+            f"To: {[d.address for d in message.destinations]} | "
+            f"Content: {message.content[:50]}..."
+        )
 
         # Generate a unique message identifier based on content and destinations
         msg_hash = hash((message.content, tuple(d.address for d in message.destinations)))
@@ -49,20 +60,21 @@ class StubSmsService(MessagingPort):
             if msg_hash not in self.failed_messages:
                 # First attempt - fail and record the failure
                 self.failed_messages.add(msg_hash)
+                self.logger.warning(
+                    f"Simulating transient failure for message from {message.sender}"
+                )
                 raise RuntimeError("Message delivery failed on first attempt - retry should succeed")
-
 
     async def get_message(self) -> Optional[Message]:
         """
-        Randomly generate incoming message with 1/10 probability
+        Randomly generate incoming message based on configured probability
         
         Returns:
             A randomly generated message, or None if no message is generated
         """
-        # 1 in 10 chance of receiving a message
-        if random.random() < 0.1:
+        if random.random() < self.message_probability:
             self.counter += 1
-            return Message(
+            message = Message(
                 content=f"Test message {self.counter} from {self.name}",
                 destinations=[
                     Destination(
@@ -72,6 +84,10 @@ class StubSmsService(MessagingPort):
                 ],
                 sender=f"+1555{random.randint(1000000,9999999)}"
             )
+            self.logger.info(
+                f"Generated test message via {self.name} | "
+                f"From: {message.sender} | "
+                f"Content: {message.content[:50]}..."
+            )
+            return message
         return None
-
-
