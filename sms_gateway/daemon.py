@@ -5,19 +5,13 @@ from pathlib import Path
 
 from sms_gateway.ports.messaging import MessagingPort
 from sms_gateway.ports.message_queue import MessageQueuePort
-from sms_gateway.adapters.queues.memory import AsyncInMemoryMessageQueue
-from sms_gateway.domain.models import SMSGatewayConfig, QueueConfig
+from sms_gateway.domain.models import SMSGatewayConfig
+from sms_gateway.adapters.queues.factory import create_queue
 from sms_gateway.common.logging import get_logger
 from sms_gateway.config import load_config, get_default_config_path
 from sms_gateway.services.sms import SMSService
 from sms_gateway.services.integration import IntegrationService
 from sms_gateway.adapters.services.registry import AdapterRegistry, AdapterType
-
-# Import adapters to ensure registration
-# We need to explicitly import so the decorators are executed
-from sms_gateway.adapters.services.stub_service import StubSmsService
-from sms_gateway.adapters.services.gsm_modem import GsmModemAdapter
-from sms_gateway.adapters.services.telegram import TelegramAdapter
 
 class SMSGatewayDaemon:
     """
@@ -45,11 +39,11 @@ class SMSGatewayDaemon:
         self.should_run = False
         
         # Initialize queues
-        self.sms_queue = self._create_queue(
+        self.sms_queue = create_queue(
             config.queues.sms_queue,
             "SMS"
         )
-        self.integration_queue = self._create_queue(
+        self.integration_queue = create_queue(
             config.queues.integration_queue,
             "integration"
         )
@@ -66,30 +60,6 @@ class SMSGatewayDaemon:
             self.integration_queue
         )
         
-    def _create_queue(
-        self,
-        queue_config: QueueConfig,
-        queue_type: str
-    ) -> MessageQueuePort:
-        """
-        Create a message queue from configuration
-        
-        Args:
-            queue_config: Queue configuration
-            queue_type: Type of queue for logging
-            
-        Returns:
-            Initialized message queue
-            
-        Raises:
-            ValueError: If queue type is not supported
-        """
-        if queue_config.type == "memory":
-            return AsyncInMemoryMessageQueue(
-                maxsize=queue_config.maxsize
-            )
-        raise ValueError(f"Unsupported queue type: {queue_config.type}")
-
     async def initialize(self) -> None:
         """
         Initialize all adapters and prepare for operation

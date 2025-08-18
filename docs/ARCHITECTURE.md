@@ -120,22 +120,24 @@ Service implementations extend the base MessageService:
 
 ## Queue System
 
-The queue system uses an async implementation based on [`asyncio.Queue`](../sms_gateway/adapters/queues/memory.py):
+The queue system is built around a factory pattern for creating message queues. The implementation is split into two main components:
 
-1. Core Features:
-   - Asynchronous message handling
-   - Configurable queue size
-   - Non-blocking operations
+1. Queue Factory:
+   - Located in `sms_gateway/adapters/queues/factory.py`
+   - Creates queue instances based on configuration
+   - Supports different queue types (currently in-memory)
+   - Extensible for future queue implementations
 
-2. Queue Operations:
-   - enqueue(): Add message with overflow protection
-   - dequeue(): Retrieve message with empty handling
-   - stream(): Async iterator for continuous processing
-
-3. State Management:
-   - Size monitoring
-   - Empty/full state detection
-   - Error handling for edge cases
+2. Memory Queue Implementation:
+   - Located in `sms_gateway/adapters/queues/memory.py`
+   - Based on `asyncio.Queue`
+   - Features:
+     - Asynchronous message handling
+     - Configurable queue size
+     - Non-blocking operations
+     - Size monitoring
+     - Empty/full state detection
+     - Error handling for edge cases
 
 ## Message Flow Details
 
