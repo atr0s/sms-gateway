@@ -38,6 +38,9 @@ class MessageService:
         for port in self.ports:
             try:
                 message = await port.get_message()
+                if message is None:
+                    continue
+                    
                 self.logger.debug(f"Received {self.name} message: {message}")
                 
                 await self.outgoing_queue.enqueue(message)

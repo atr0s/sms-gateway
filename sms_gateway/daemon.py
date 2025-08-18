@@ -8,6 +8,7 @@ from sms_gateway.ports.message_queue import MessageQueuePort
 from sms_gateway.adapters.queues.memory import AsyncInMemoryMessageQueue
 from sms_gateway.adapters.services.telegram import TelegramAdapter
 from sms_gateway.adapters.services.stub_service import StubSmsService
+from sms_gateway.adapters.services.gsm_modem import GsmModemAdapter
 from sms_gateway.domain.models import (
     SMSGatewayConfig,
     BaseConfig, 
@@ -104,6 +105,7 @@ class SMSGatewayDaemon:
         self.logger.info(f"Starting SMS Gateway daemon ({self.config.name})...")
         
         # Initialize SMS adapters
+        # Initialize SMS adapters
         if self.config.sms.stub:
             await self._init_adapters(
                 configs=self.config.sms.stub,
@@ -112,6 +114,14 @@ class SMSGatewayDaemon:
                 service_type="SMS"
             )
             
+        if self.config.sms.gsm_modem:
+            await self._init_adapters(
+                configs=self.config.sms.gsm_modem,
+                adapter_class=GsmModemAdapter,
+                port_list=self.sms_ports,
+                service_type="SMS"
+            )
+
         # Initialize integration adapters
         if self.config.integration.telegram:
             await self._init_adapters(
