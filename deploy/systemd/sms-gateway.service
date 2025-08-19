@@ -1,0 +1,26 @@
+[Unit]
+Description=SMS Gateway Service
+After=network.target
+Documentation=https://github.com/atr0s/sms-gateway
+
+[Service]
+Type=simple
+User=sms-gateway
+Group=sms-gateway
+ExecStart=/usr/local/bin/sms-gateway -c /etc/sms-gateway/config.json
+WorkingDirectory=/usr/local/share/sms-gateway
+Environment=PYTHONUNBUFFERED=1
+Restart=always
+RestartSec=3
+
+# Security hardening
+NoNewPrivileges=yes
+ProtectSystem=full
+ProtectHome=read-only
+PrivateTmp=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+
+[Install]
+WantedBy=multi-user.target
