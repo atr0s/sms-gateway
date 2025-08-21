@@ -66,7 +66,31 @@ class GammuAdapter(MessagingPort):
             MessagingError: If sending fails
             RuntimeError: If Gammu is not initialized
         """
-        
+        if not self.sm:
+            raise RuntimeError("Gammu modem not initialized")
+            
+        # Send to all SMS destinations
+        for destination in message.destinations:
+            try:
+                sms = {
+                    'Text': message.content,
+                    'SMSC': {'Location': 1},
+                    'Number': destination.address
+                }
+                
+                # Send the message
+                self.sm.SendSMS(sms)
+                
+                self.logger.info(
+                    f"Sent SMS via {self.name} | To: {destination.address} | "
+                    f"Content: {message.content[:30]}..."
+                )
+            except Exception as e:
+                self.logger.error(
+                    f"Failed to send SMS via {self.name} | "
+                    f"To: {destination.address} | Error: {e}"
+                )
+                raise
     async def get_message(self) -> Optional[Message]:
         """Get a single SMS message from Gammu
         
@@ -77,3 +101,37 @@ class GammuAdapter(MessagingPort):
             MessagingError: If receiving fails
             RuntimeError: If Gammu is not initialized
         """
+        if not self.sm:
+            raise RuntimeError("Gammu modem not initialized")
+            
+        try:
+            # Get the first available message
+            status = self.sm.GetSMSStatus()
+            if status['SIMUsed'] + status['PhoneUsed'] == 0:
+                return None
+                
+            messages = self.sm.GetNextSMS(Start=True)
+            if not messages:
+                return None
+                
+            # Get the first message
+            sms = messages[0]
+            
+            # Delete the message after reading
+            self.sm.DeleteSMS(Folder=0, Location=sms['Location'])
+            
+            self.logger.info(
+                f"Received SMS via {self.name} | From: {sms['Number']} | "
+                f"Content: {sms['Text'][:30]}..."
+            )
+            
+            # Convert to our Message format
+            return Message(
+                content=sms['Text'],
+                destinations=[],  # No destinations for received messages
+                sender=sms['Number']
+            )
+            
+        except Exception as e:
+            self.logger.error(f"Failed to get SMS via {self.name}: {e}")
+            raise

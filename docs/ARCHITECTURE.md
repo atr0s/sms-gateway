@@ -18,7 +18,7 @@ Located in `sms_gateway/domain/models.py`:
 - Service-specific configs:
   - `TelegramConfig`
   - `EmailConfig`
-  - `GSMModemConfig`
+  - `GammuConfig`
   - `SMSGatewayConfig`
 
 ### Ports (Interfaces)
@@ -69,7 +69,7 @@ graph TD
     C --> E[Telegram Port]
     C --> F[Email Port]
     
-    D --> G[GSM Modem]
+    D --> G[Gammu Modem]
     E --> H[Telegram API]
     F --> I[SMTP Server]
     
@@ -103,7 +103,7 @@ The [`MessageService`](../sms_gateway/services/base.py) class provides core mess
 Service implementations extend the base MessageService:
 
 1. SMS Service:
-   - Handles GSM modem communication through async-gsm-modem library
+   - Handles GSM modem communication through python-gammu library
    - Manages message delivery status and cleanup
    - Monitors signal strength and modem state
    - Supports sending and receiving SMS messages

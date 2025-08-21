@@ -83,9 +83,9 @@ The gateway can be configured through a JSON configuration file:
   "services": {
     "sms": {
       "name": "sms",
-      "type": "modem",
+      "type": "gammu",
       "port": "/dev/ttyUSB0",
-      "baud_rate": 115200
+      "connection": "at115200"
     },
     "telegram": {
       "name": "telegram",
@@ -132,7 +132,7 @@ Core dependencies:
 - typing-extensions: Additional typing support
 - aiohttp: Async HTTP client/server
 - pyserial-asyncio: Async serial port support
-- async-gsm-modem: Async interface for GSM modems (SMS)
+- python-gammu: Interface for GSM modems using Gammu library
 
 Development dependencies:
 - pytest: Testing framework

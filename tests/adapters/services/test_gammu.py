@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import AsyncMock, patch, MagicMock
 
-from sms_gateway.domain.models import GammuConfig
+from sms_gateway.domain.models import GammuConfig, Message, Destination, MessageType
 from sms_gateway.adapters.services.gammu import GammuAdapter
 
 @pytest.fixture
@@ -68,3 +68,121 @@ async def test_shutdown(gammu_adapter: GammuAdapter):
         # Verify shutdown
         mock_sm.Terminate.assert_called_once()
         assert gammu_adapter.sm is None
+
+@pytest.mark.asyncio(scope="function")
+async def test_send_message(gammu_adapter: GammuAdapter):
+    """Test sending SMS message through Gammu"""
+    # Setup test message
+    message = Message(
+        content="Test SMS",
+        destinations=[
+            Destination(type=MessageType.SMS, address="+1234567890")
+        ],
+        sender="test-sender"
+    )
+    
+    # Setup mock modem
+    mock_sm = MagicMock()
+    gammu_adapter.sm = mock_sm
+    
+    # Send message
+    await gammu_adapter.send_message(message)
+    
+    # Verify send_sms was called with correct parameters
+    mock_sm.SendSMS.assert_called_once_with({
+        'Text': message.content,
+        'SMSC': {'Location': 1},
+        'Number': "+1234567890"
+    })
+
+@pytest.mark.asyncio(scope="function")
+async def test_send_message_not_initialized(gammu_adapter: GammuAdapter):
+    """Test sending message when modem is not initialized"""
+    message = Message(
+        content="Test SMS",
+        destinations=[
+            Destination(type=MessageType.SMS, address="+1234567890")
+        ],
+        sender="test-sender"
+    )
+    
+    with pytest.raises(RuntimeError, match="Gammu modem not initialized"):
+        await gammu_adapter.send_message(message)
+
+@pytest.mark.asyncio(scope="function")
+async def test_send_message_error(gammu_adapter: GammuAdapter):
+    """Test sending message when Gammu fails"""
+    # Setup test message
+    message = Message(
+        content="Test SMS",
+        destinations=[
+            Destination(type=MessageType.SMS, address="+1234567890")
+        ],
+        sender="test-sender"
+    )
+    
+    # Setup mock to raise error
+    mock_sm = MagicMock()
+    mock_sm.SendSMS.side_effect = Exception("Failed to send")
+    gammu_adapter.sm = mock_sm
+    
+    # Attempt to send message
+    with pytest.raises(Exception, match="Failed to send"):
+        await gammu_adapter.send_message(message)
+    
+    # Verify send attempt was made
+    mock_sm.SendSMS.assert_called_once()
+
+@pytest.mark.asyncio(scope="function")
+async def test_get_message(gammu_adapter: GammuAdapter):
+    """Test getting a message from Gammu"""
+    # Setup mock with available message
+    mock_sm = MagicMock()
+    mock_sm.GetSMSStatus.return_value = {'SIMUsed': 1, 'PhoneUsed': 0}
+    mock_sm.GetNextSMS.return_value = [{
+        'Text': 'Test message',
+        'Number': '+1234567890',
+        'Location': 1
+    }]
+    gammu_adapter.sm = mock_sm
+    
+    # Get message
+    message = await gammu_adapter.get_message()
+    
+    # Verify message was retrieved and converted correctly
+    assert message is not None
+    assert message.content == 'Test message'
+    assert message.sender == '+1234567890'
+    assert not message.destinations
+    
+    # Verify status was checked and message was deleted
+    mock_sm.GetSMSStatus.assert_called_once()
+    mock_sm.GetNextSMS.assert_called_once_with(Start=True)
+    mock_sm.DeleteSMS.assert_called_once_with(Folder=0, Location=1)
+
+@pytest.mark.asyncio(scope="function")
+async def test_get_message_empty(gammu_adapter: GammuAdapter):
+    """Test getting message when none are available"""
+    mock_sm = MagicMock()
+    mock_sm.GetSMSStatus.return_value = {'SIMUsed': 0, 'PhoneUsed': 0}
+    gammu_adapter.sm = mock_sm
+    
+    message = await gammu_adapter.get_message()
+    assert message is None
+    mock_sm.GetNextSMS.assert_not_called()
+
+@pytest.mark.asyncio(scope="function")
+async def test_get_message_not_initialized(gammu_adapter: GammuAdapter):
+    """Test getting message when modem is not initialized"""
+    with pytest.raises(RuntimeError, match="Gammu modem not initialized"):
+        await gammu_adapter.get_message()
+
+@pytest.mark.asyncio(scope="function")
+async def test_get_message_error(gammu_adapter: GammuAdapter):
+    """Test getting message when Gammu fails"""
+    mock_sm = MagicMock()
+    mock_sm.GetSMSStatus.side_effect = Exception("Failed to get status")
+    gammu_adapter.sm = mock_sm
+    
+    with pytest.raises(Exception, match="Failed to get status"):
+        await gammu_adapter.get_message()
