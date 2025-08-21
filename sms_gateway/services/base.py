@@ -74,7 +74,7 @@ class MessageService:
                 f"To: {[d.address for d in message.destinations]} | "
                 f"Requeueing for retry"
             )
-            await self.outgoing_queue.enqueue(message)
+            await self.incoming_queue.enqueue(message)
             
         except Exception as e:
             # Queue might be empty, that's normal
