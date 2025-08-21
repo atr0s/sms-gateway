@@ -35,10 +35,9 @@ class EmailConfig(BaseConfig):
     use_tls: bool = Field(default=True, description="Whether to use TLS")
     from_address: str = Field(description="Default sender email address")
 
-class GSMModemConfig(BaseConfig):
-    port: str = Field(description="Serial port for the GSM modem")
-    baud_rate: int = Field(default=115200, description="Baud rate for serial communication")
-    pin: str | None = Field(default=None, description="SIM PIN if required")
+class GammuConfig(BaseConfig):
+    port: str = Field(description="Serial port for the modem device")
+    connection: str = Field(default="at115200", description="Connection type and speed (e.g. at115200)")
 
 class StubConfig(BaseConfig):
     message_probability: float = Field(
@@ -65,7 +64,7 @@ class AdapterConfig(BaseModel):
     """Configuration for message adapters (input/output)"""
     telegram: List[TelegramConfig] | None = Field(default=None, description="List of Telegram adapters")
     email: List[EmailConfig] | None = Field(default=None, description="List of Email adapters")
-    gsm_modem: List[GSMModemConfig] | None = Field(default=None, description="List of GSM modem adapters")
+    gammu: List[GammuConfig] | None = Field(default=None, description="List of Gammu modem adapters")
     stub: List[StubConfig] | None = Field(default=None, description="List of stub adapters")
 
 class RuntimeConfig(BaseModel):

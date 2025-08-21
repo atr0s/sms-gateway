@@ -9,7 +9,6 @@ from sms_gateway.adapters.services.registry import AdapterRegistry, AdapterType
 
 # Then import the adapters to trigger their registration decorators
 from sms_gateway.adapters.services.stub_service import StubSmsService
-from sms_gateway.adapters.services.gsm_modem import GsmModemAdapter
 from sms_gateway.adapters.services.telegram import TelegramAdapter
 
 # Register all available adapters and types
@@ -17,7 +16,6 @@ __all__ = [
     'AdapterRegistry',
     'AdapterType',
     'StubSmsService',
-    'GsmModemAdapter',
     'TelegramAdapter',
 ]
 
