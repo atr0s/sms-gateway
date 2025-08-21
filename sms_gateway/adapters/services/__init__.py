@@ -17,6 +17,7 @@ __all__ = [
     'AdapterType',
     'StubSmsService',
     'TelegramAdapter',
+    'GammuAdapter'
 ]
 
 # Get a list of registered adapters for debugging
