@@ -111,7 +111,7 @@ class GammuAdapter(MessagingPort):
             if status['SIMUsed'] + status['PhoneUsed'] == 0:
                 return None
                 
-            messages = self.sm.GetNextSMS(Start=True)
+            messages = self.sm.GetNextSMS(Start=True, Folder=0)
             if not messages:
                 return None
                 

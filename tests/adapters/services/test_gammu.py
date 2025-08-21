@@ -157,7 +157,7 @@ async def test_get_message(gammu_adapter: GammuAdapter):
     
     # Verify status was checked and message was deleted
     mock_sm.GetSMSStatus.assert_called_once()
-    mock_sm.GetNextSMS.assert_called_once_with(Start=True)
+    mock_sm.GetNextSMS.assert_called_once_with(Start=True, Folder=0)
     mock_sm.DeleteSMS.assert_called_once_with(Folder=0, Location=1)
 
 @pytest.mark.asyncio(scope="function")
