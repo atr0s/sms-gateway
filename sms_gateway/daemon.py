@@ -11,7 +11,7 @@ from sms_gateway.common.logging import get_logger
 from sms_gateway.config import load_config, get_default_config_path
 from sms_gateway.services.sms import SMSService
 from sms_gateway.services.integration import IntegrationService
-from sms_gateway.adapters.services.registry import AdapterRegistry, AdapterType
+from sms_gateway.common.registry import AdapterRegistry, AdapterType
 
 class SMSGatewayDaemon:
     """
@@ -83,7 +83,7 @@ class SMSGatewayDaemon:
         # Initialize SMS adapters using registry
         sms_configs = {
             "stub": self.config.sms.stub or [],
-            "gsm_modem": self.config.sms.gsm_modem or []
+            "gammu": self.config.sms.gsm_modem or []
         }
         
         # Log configured adapters
