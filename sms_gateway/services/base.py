@@ -21,7 +21,8 @@ class MessageService:
         Args:
             name: Service name for logging
             ports: List of messaging ports
-            message_queue: Queue for message processing
+            incoming_queue: Queue for message processing
+            outgoing_queue: Queue for message processing
         """
         self.name = name
         self.ports = ports
@@ -73,7 +74,7 @@ class MessageService:
                 f"To: {[d.address for d in message.destinations]} | "
                 f"Requeueing for retry"
             )
-            await self.message_queue.enqueue(message)
+            await self.outgoing_queue.enqueue(message)
             
         except Exception as e:
             # Queue might be empty, that's normal

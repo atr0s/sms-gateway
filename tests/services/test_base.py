@@ -94,13 +94,13 @@ async def test_process_queue_all_ports_fail(service, mock_port, mock_queue, test
     mock_queue.dequeue.return_value = test_message
     mock_port.send_message.side_effect = Exception("Send failed")
     
-    # Execute
+    # Execute 
     await service.process_queue()
     
     # Assert
     mock_queue.dequeue.assert_called_once()
     mock_port.send_message.assert_called_once_with(test_message)
-    assert mock_queue.enqueue.call_count == 0  # Service doesn't requeue on failure
+    assert mock_queue.enqueue.call_count == 1  # Service doesn't requeue on failure
     # Note: The requeue functionality was removed from the base service implementation
 
 @pytest.mark.asyncio

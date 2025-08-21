@@ -92,7 +92,8 @@ async def test_send_message(gammu_adapter: GammuAdapter):
     mock_sm.SendSMS.assert_called_once_with({
         'Text': message.content,
         'SMSC': {'Location': 1},
-        'Number': "+1234567890"
+        'Number': "+1234567890",
+        'Entries': []
     })
 
 @pytest.mark.asyncio(scope="function")

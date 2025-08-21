@@ -17,8 +17,8 @@ from sms_gateway.ports.messaging import MessagingPort
 from sms_gateway.common.logging import get_logger
 from sms_gateway.adapters.services.registry import AdapterRegistry, AdapterType
 
-PHONE_PATTERN = re.compile(r'^\+\d{1,3}\d{4,14}$')
-SMS_COMMAND_PATTERN = re.compile(r'^/sms\s+(\+\d+)\s+"([^"]+)"$')
+PHONE_PATTERN = re.compile(r'^\+?\d{3,15}$')
+SMS_COMMAND_PATTERN = re.compile(r'^/sms\s+(\+?\d+)\s+"([^"]+)"$')
 
 @AdapterRegistry.register(AdapterType.INTEGRATION, "telegram")
 class TelegramAdapter(MessagingPort):

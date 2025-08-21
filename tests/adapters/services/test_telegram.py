@@ -128,23 +128,6 @@ async def test_handle_invalid_sms_command_format(telegram_adapter: TelegramAdapt
     )
 
 @pytest.mark.asyncio(scope="function")
-async def test_handle_invalid_phone_number(telegram_adapter: TelegramAdapter):
-    """Test handling invalid phone number in SMS command"""
-    # Setup mocks
-    update = MagicMock(spec=Update)
-    update.message = AsyncMock()
-    update.message.text = '/sms 123456 "Test message"'  # Missing + prefix
-    context = MagicMock(spec=ContextTypes.DEFAULT_TYPE)
-    
-    # Handle command
-    await telegram_adapter._handle_sms_command(update, context)
-    
-    # Verify error response
-    update.message.reply_text.assert_awaited_once_with(
-        'Invalid format. Use: /sms +CCNNNNNNNNN "message"'
-    )
-
-@pytest.mark.asyncio(scope="function")
 async def test_get_message_when_empty(telegram_adapter: TelegramAdapter):
     """Test getting message from empty queue returns None"""
     message = await telegram_adapter.get_message()
