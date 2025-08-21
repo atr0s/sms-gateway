@@ -83,7 +83,7 @@ class SMSGatewayDaemon:
         # Initialize SMS adapters using registry
         sms_configs = {
             "stub": self.config.sms.stub or [],
-            "gammu": self.config.sms.gsm_modem or []
+            "gammu": self.config.sms.gammu or []
         }
         
         # Log configured adapters
