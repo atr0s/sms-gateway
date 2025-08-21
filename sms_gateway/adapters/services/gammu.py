@@ -107,6 +107,7 @@ class GammuAdapter(MessagingPort):
         try:
             # Get the first available message
             status = self.sm.GetSMSStatus()
+            print(status)
             if status['SIMUsed'] + status['PhoneUsed'] == 0:
                 return None
                 
