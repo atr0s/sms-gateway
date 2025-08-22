@@ -16,6 +16,7 @@ class Message(BaseModel):
     destinations: List[Destination] = Field(description="List of destinations to send the message to")
     sender: str = Field(description="Sender identifier (phone number, email, etc)")
     priority: int = Field(default=0, description="Message priority (0 = normal, 1 = high)")
+    retry_count: int = Field(default=0, description="Number of retry attempts for failed message delivery")
     
 class BaseConfig(BaseModel):
     enabled: bool = Field(default=True, description="Whether this service is enabled")

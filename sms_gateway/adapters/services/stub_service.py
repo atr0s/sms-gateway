@@ -57,13 +57,17 @@ class StubSmsService(MessagingPort):
         # Check if message contains trigger words and hasn't failed before
         failure_triggers = ['fail', 'error', 'crash', 'exception']
         if any(trigger in message.content.lower() for trigger in failure_triggers):
-            if msg_hash not in self.failed_messages:
-                # First attempt - fail and record the failure
+            # Track message state by its hash
+            failed_before = msg_hash in self.failed_messages
+            
+            if not failed_before:
+                # First attempt - record the failure
                 self.failed_messages.add(msg_hash)
-                self.logger.warning(
-                    f"Simulating transient failure for message from {message.sender}"
-                )
+                self.logger.warning(f"Simulating transient failure for message from {message.sender}")
                 raise RuntimeError("Message delivery failed on first attempt - retry should succeed")
+            else:
+                # This message failed before, but now succeeds
+                self.logger.info(f"Retry succeeded for message from {message.sender}")
 
     async def get_message(self) -> Optional[Message]:
         """
@@ -82,7 +86,8 @@ class StubSmsService(MessagingPort):
                         address="1234567890"
                     )
                 ],
-                sender=f"+1555{random.randint(1000000,9999999)}"
+                sender=f"+1555{random.randint(1000000,9999999)}",
+                retry_count=0  # Start with no retries for new messages
             )
             self.logger.info(
                 f"Generated test message via {self.name} | "

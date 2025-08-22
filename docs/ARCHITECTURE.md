@@ -13,6 +13,8 @@ The SMS Gateway is designed using Clean Architecture principles with a Port and 
 Located in `sms_gateway/domain/models.py`:
 
 - `Message`: Represents a message to be sent through the gateway
+  - Core fields: content, sender, destinations, priority
+  - retry_count: Tracks number of failed delivery attempts for better retry handling
 - `Destination`: Defines a message destination with type and address
 - `BaseConfig`: Base configuration for all services
 - Service-specific configs:
@@ -90,8 +92,12 @@ The [`MessageService`](../sms_gateway/services/base.py) class provides core mess
 2. Message Processing:
    - Dequeues messages for processing
    - Attempts delivery through available ports
-   - Implements retry logic for failed deliveries
-   - Handles errors and logging
+   - Implements retry logic with max retry limit:
+     - Tracks retry attempts per message (up to 5 retries)
+     - Increments retry count on each failure
+     - Messages exceeding retry limit are discarded
+     - Detailed logging of retry status and final failures
+   - Handles errors and logging with retry count information
 
 3. Port Management:
    - Maintains list of active messaging ports
@@ -164,10 +170,15 @@ The queue system is built around a factory pattern for creating message queues. 
    f. Delivery attempt with retry logic
 
 3. Error Handling:
-   - Port failures trigger retries
-   - Queue overflow protection
-   - Logging at each step
-   - Error reporting to monitoring
+    - Port failures trigger retries with strict limits:
+      - Maximum 5 retry attempts per message
+      - Retry count tracked in Message model
+      - Messages discarded after max retries reached
+      - Detailed logging of retry attempts and final failures
+    - Messages track failed delivery attempts for retry management
+    - Queue overflow protection
+    - Logging at each step with retry attempt information
+    - Error reporting to monitoring
 
 This architecture provides:
 - Clean separation of concerns

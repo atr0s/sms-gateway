@@ -26,7 +26,8 @@ def test_message():
         destinations=[
             Destination(type=MessageType.SMS, address="+1234567890")
         ],
-        sender="+0987654321"
+        sender="+0987654321",
+        retry_count=0
     )
 
 @pytest.fixture
@@ -94,14 +95,46 @@ async def test_process_queue_all_ports_fail(service, mock_port, mock_queue, test
     mock_queue.dequeue.return_value = test_message
     mock_port.send_message.side_effect = Exception("Send failed")
     
-    # Execute 
+    # Execute
     await service.process_queue()
     
     # Assert
     mock_queue.dequeue.assert_called_once()
     mock_port.send_message.assert_called_once_with(test_message)
-    assert mock_queue.enqueue.call_count == 1  # Service doesn't requeue on failure
-    # Note: The requeue functionality was removed from the base service implementation
+    mock_queue.enqueue.assert_called_once_with(test_message)
+    assert test_message.retry_count == 1  # Retry count should be incremented
+    
+@pytest.mark.asyncio
+async def test_process_queue_max_retries(service, mock_port, mock_queue, test_message):
+    # Setup
+    mock_queue.dequeue.return_value = test_message
+    mock_port.send_message.side_effect = Exception("Send failed")
+    test_message.retry_count = 4  # One attempt away from max retries
+    
+    # Execute
+    await service.process_queue()
+    
+    # Assert
+    mock_queue.dequeue.assert_called_once()
+    mock_port.send_message.assert_called_once_with(test_message)
+    assert test_message.retry_count == 5  # Should increment to max
+    assert mock_queue.enqueue.call_count == 0  # Should not requeue after max retries
+
+@pytest.mark.asyncio
+async def test_process_queue_under_max_retries(service, mock_port, mock_queue, test_message):
+    # Setup
+    mock_queue.dequeue.return_value = test_message
+    mock_port.send_message.side_effect = Exception("Send failed")
+    test_message.retry_count = 2  # Well under max retries
+    
+    # Execute
+    await service.process_queue()
+    
+    # Assert
+    mock_queue.dequeue.assert_called_once()
+    mock_port.send_message.assert_called_once_with(test_message)
+    assert test_message.retry_count == 3  # Should increment
+    mock_queue.enqueue.assert_called_once_with(test_message)  # Should requeue
 
 @pytest.mark.asyncio
 async def test_process_queue_empty(service, mock_queue):

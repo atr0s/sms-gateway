@@ -56,23 +56,38 @@ class MessageService:
                 
     async def process_queue(self) -> None:
         """Process messages from the queue and attempt delivery through ports"""
+        MAX_RETRIES = 5
+
         try:
             message = await self.incoming_queue.dequeue()
             
             self.logger.info(
                 f"Processing {self.name} message from {message.sender} | "
-                f"To: {[d.address for d in message.destinations]}"
+                f"To: {[d.address for d in message.destinations]} | "
+                f"Retry: {message.retry_count}/{MAX_RETRIES}"
             )
             
             if await self._try_send_message(message):
                 return
                 
-            # No ports succeeded, requeue for retry
+            # No ports succeeded, check retry count
+            message.retry_count += 1
+            
+            if message.retry_count >= MAX_RETRIES:
+                self.logger.error(
+                    f"Max retries ({MAX_RETRIES}) reached for {self.name} message | "
+                    f"From: {message.sender} | "
+                    f"To: {[d.address for d in message.destinations]} | "
+                    f"Message will be discarded"
+                )
+                return
+                
+            # Requeue for retry
             self.logger.warning(
                 f"All ports failed to send {self.name} message | "
                 f"From: {message.sender} | "
                 f"To: {[d.address for d in message.destinations]} | "
-                f"Requeueing for retry"
+                f"Retry attempt {message.retry_count}/{MAX_RETRIES}"
             )
             await self.incoming_queue.enqueue(message)
             
