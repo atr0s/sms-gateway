@@ -53,7 +53,7 @@ class TelegramAdapter(MessagingPort):
         # Start the bot
         await self.app.initialize()
         await self.app.start()
-        await self.app.updater.start_polling(allowed_updates=Update.ALL_TYPES)
+        await self.app.updater.start_polling(allowed_updates=Update.MESSAGE)
         self.logger.info(f"Initialized Telegram bot {self.name} with chat ID {config.chat_id}")
         
     async def shutdown(self) -> None:
