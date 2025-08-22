@@ -40,11 +40,15 @@ class TelegramAdapter(MessagingPort):
         Raises:
             ConfigurationError: If configuration is invalid
         """
+        self.logger.debug(f"Initializing Telegram bot with config: {config}")
         self.config = config
         self.name = config.name
+        
+        self.logger.debug(f"Building Telegram application with token: {config.bot_token[:5]}...")
         self.app = Application.builder().token(config.bot_token).build()
         
         # Add command handlers
+        self.logger.debug("Registering SMS command handler")
         self.app.add_handler(CommandHandler("sms", self._handle_sms_command))
         
         # Set unique updater name based on config name
@@ -77,9 +81,11 @@ class TelegramAdapter(MessagingPort):
             raise RuntimeError("Telegram bot not initialized")
 
         # Format message
-        full_text_message = f"From: {message.sender}\nMessage: {message.content}"            
+        self.logger.debug(f"Formatting message from {message.sender}")
+        full_text_message = f"From: {message.sender}\nMessage: {message.content}"
         
         try:
+            self.logger.debug(f"Sending message to chat {self.config.chat_id}")
             await self.app.bot.send_message(
                 chat_id=self.config.chat_id,
                 text=full_text_message
@@ -122,18 +128,23 @@ class TelegramAdapter(MessagingPort):
         if not update.message or not update.message.text:
             return
             
+        self.logger.debug(f"Received SMS command: {update.message.text}")
+        
         # Parse command
         match = SMS_COMMAND_PATTERN.match(update.message.text)
         if not match:
+            self.logger.debug("Invalid SMS command format")
             await update.message.reply_text(
                 'Invalid format. Use: /sms +CCNNNNNNNNN "message"'
             )
             return
             
         phone_number, message_text = match.groups()
+        self.logger.debug(f"Parsed command - Phone: {phone_number}, Message: {message_text}")
         
         # Validate phone number
         if not PHONE_PATTERN.match(phone_number):
+            self.logger.debug(f"Invalid phone number format: {phone_number}")
             await update.message.reply_text(
                 'Invalid phone number format. Use international format: +CCNNNNNNNNN'
             )
@@ -152,6 +163,7 @@ class TelegramAdapter(MessagingPort):
         )
         
         # Add to queue
+        self.logger.debug(f"Adding message to queue for {phone_number}")
         await self._message_queue.put(message)
         self.logger.info(
             f"Queued SMS message via {self.name} | "

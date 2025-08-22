@@ -26,12 +26,15 @@ class GammuAdapter(MessagingPort):
         self.name = config.name
         
         try:
+            self.logger.debug(f"Initializing Gammu modem {self.name} with config: {config}")
+            
             # Create and configure state machine
             self.sm = StateMachine()
             device_cfg = {
                 'Device': config.port,
                 'Connection': config.connection
             }
+            self.logger.debug(f"Created device config: {device_cfg}")
             
             # Initialize the state machine with configuration
             self.sm.SetConfig(0, device_cfg)
@@ -72,12 +75,17 @@ class GammuAdapter(MessagingPort):
         # Send to all SMS destinations
         for destination in message.destinations:
             try:
+                self.logger.debug(
+                    f"Preparing to send SMS via {self.name} | "
+                    f"To: {destination.address} | Content: {message.content}"
+                )
                 sms = {
                     'Text': message.content,
                     'SMSC': {'Location': 1},
                     'Number': destination.address,
                     'Entries': []
                 }
+                self.logger.debug(f"Created SMS message object: {sms}")
                 
                 # Send the message
                 self.sm.SendSMS(sms)
@@ -107,18 +115,25 @@ class GammuAdapter(MessagingPort):
             
         try:
             # Get the first available message
+            self.logger.debug("Checking SMS status")
             status = self.sm.GetSMSStatus()
+            self.logger.debug(f"SMS status: SIM={status['SIMUsed']}, Phone={status['PhoneUsed']}")
+            
             if status['SIMUsed'] + status['PhoneUsed'] == 0:
+                self.logger.debug("No messages available")
                 return None
                 
+            self.logger.debug("Reading next SMS message")
             messages = self.sm.GetNextSMS(Start=True, Folder=0)
             if not messages:
+                self.logger.debug("No messages found")
                 return None
                 
             # Get the first message
             sms = messages[0]
             
             # Delete the message after reading
+            self.logger.debug(f"Deleting SMS at location {sms['Location']}")
             self.sm.DeleteSMS(Folder=0, Location=sms['Location'])
             
             self.logger.info(

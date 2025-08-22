@@ -29,6 +29,12 @@ class MessageService:
         self.incoming_queue = incoming_queue
         self.outgoing_queue = outgoing_queue
         self.logger = get_logger(f"service.{name}")
+        self.logger.debug(
+            f"Initializing message service {name} with "
+            f"{len(ports)} ports | "
+            f"Incoming queue: {incoming_queue.__class__.__name__} | "
+            f"Outgoing queue: {outgoing_queue.__class__.__name__}"
+        )
         
     async def check_ports(self, route_to: str) -> None:
         """Check ports for new messages and route them to the queue
@@ -36,10 +42,13 @@ class MessageService:
         Args:
             route_to: Destination name for logging
         """
+        self.logger.debug(f"Checking {len(self.ports)} ports for new messages to route to {route_to}")
         for port in self.ports:
             try:
+                self.logger.debug(f"Checking port {port.name} for messages")
                 message = await port.get_message()
                 if message is None:
+                    self.logger.debug(f"No messages available from port {port.name}")
                     continue
                     
                 self.logger.debug(f"Received {self.name} message: {message}")
@@ -59,6 +68,7 @@ class MessageService:
         MAX_RETRIES = 5
 
         try:
+            self.logger.debug("Attempting to dequeue message from incoming queue")
             message = await self.incoming_queue.dequeue()
             
             self.logger.info(
@@ -108,8 +118,10 @@ class MessageService:
         Returns:
             True if message was sent successfully, False if all ports failed
         """
+        self.logger.debug(f"Attempting to send message through {len(self.ports)} available ports")
         for port in self.ports:
             try:
+                self.logger.debug(f"Attempting to send message via port {port.name}")
                 await port.send_message(message)
                 self.logger.info(
                     f"Successfully sent {self.name} message via {port.name} | "

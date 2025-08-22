@@ -2,6 +2,7 @@ import asyncio
 from typing import AsyncIterator
 from sms_gateway.domain.models import Message
 from sms_gateway.ports.message_queue import MessageQueuePort
+from sms_gateway.common.logging import get_logger
 
 class QueueFullError(Exception):
     """Raised when attempting to enqueue a message to a full queue"""
@@ -15,6 +16,7 @@ class AsyncInMemoryMessageQueue(MessageQueuePort):
     """Async in-memory implementation of the message queue using asyncio.Queue"""
     
     def __init__(self, maxsize: int = 1000):
+        self.logger = get_logger(__name__)
         """
         Initialize the async in-memory queue
         
@@ -34,8 +36,12 @@ class AsyncInMemoryMessageQueue(MessageQueuePort):
             QueueFullError: If the queue is full
         """
         try:
-            return self._queue.put_nowait(message)
+            self.logger.debug(f"Enqueueing message: {message}")
+            result = self._queue.put_nowait(message)
+            self.logger.debug("Message enqueued successfully")
+            return result
         except asyncio.QueueFull:
+            self.logger.error("Failed to enqueue message: queue is full")
             raise QueueFullError("Message queue is full")
     
     async def dequeue(self) -> Message:
@@ -49,8 +55,12 @@ class AsyncInMemoryMessageQueue(MessageQueuePort):
             QueueEmptyError: If the queue is empty
         """
         try:
-            return self._queue.get_nowait()
+            self.logger.debug("Attempting to dequeue message")
+            message = self._queue.get_nowait()
+            self.logger.debug(f"Dequeued message: {message}")
+            return message
         except asyncio.QueueEmpty:
+            self.logger.debug("No messages available to dequeue")
             raise QueueEmptyError("Message queue is empty")
     
     async def stream(self) -> AsyncIterator[Message]:
@@ -60,8 +70,10 @@ class AsyncInMemoryMessageQueue(MessageQueuePort):
         Yields:
             Messages as they are added to the queue
         """
+        self.logger.debug("Starting message stream")
         while True:
             message = await self._queue.get()
+            self.logger.debug(f"Streamed message: {message}")
             yield message
     
     def size(self) -> int:

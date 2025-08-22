@@ -33,13 +33,17 @@ class AdapterRegistry:
         Returns:
             Decorator function to register the adapter class
         """
+        logger.debug(f"Registering adapter - Type: {adapter_type}, Name: {name}")
+        
         # Convert type and name to lowercase for consistent lookup
         adapter_type = adapter_type.lower()
         name = name.lower()
+        logger.debug(f"Normalized adapter identifiers - Type: {adapter_type}, Name: {name}")
         
         # Ensure valid adapter type
         if adapter_type not in cls._adapters:
             valid_types = list(cls._adapters.keys())
+            logger.debug(f"Invalid adapter type. Valid types are: {valid_types}")
             raise ValueError(f"Invalid adapter type '{adapter_type}'. Must be one of: {valid_types}")
         
         def decorator(adapter_cls: Type[MessagingPort]) -> Type[MessagingPort]:
@@ -63,11 +67,14 @@ class AdapterRegistry:
         Returns:
             The adapter class if found, None otherwise
         """
+        logger.debug(f"Looking up adapter class - Type: {adapter_type}, Name: {name}")
+        
         # Convert type and name to lowercase for consistent lookup
         adapter_type = adapter_type.lower()
         name = name.lower()
         
         if adapter_type not in cls._adapters:
+            logger.debug(f"Adapter type {adapter_type} not found in registry")
             return None
             
         return cls._adapters[adapter_type].get(name)
@@ -92,13 +99,18 @@ class AdapterRegistry:
         Raises:
             KeyError: If adapter name not found in registry
         """
+        logger.debug(f"Creating adapter instance - Type: {adapter_type}, Name: {name}, Config: {config}")
+        
         # Convert type and name to lowercase for consistent lookup
         adapter_type = adapter_type.lower()
         name = name.lower()
         
         adapter_cls = cls.get_adapter_class(adapter_type, name)
         if not adapter_cls:
+            logger.debug(f"No adapter class found for {adapter_type}:{name}")
             raise KeyError(f"No {adapter_type} adapter registered with name: {name}")
+        
+        logger.debug(f"Found adapter class: {adapter_cls.__name__}")
 
         try:
             adapter = adapter_cls()
@@ -132,10 +144,14 @@ class AdapterRegistry:
         logger.info(f"Found {len(registered)} registered {adapter_type} adapters: {registered}")
         
         adapters = []
+        logger.debug(f"Creating adapters for configs: {configs}")
         for adapter_name, adapter_configs in configs.items():
             adapter_name = adapter_name.lower()
+            logger.debug(f"Processing adapter configs for {adapter_name}")
             for config in adapter_configs:
-                if getattr(config, 'enabled', True):  # Default to enabled if not specified
+                enabled = getattr(config, 'enabled', True)  # Default to enabled if not specified
+                logger.debug(f"Config {config.name} enabled: {enabled}")
+                if enabled:
                     try:
                         adapter = await cls.create_adapter(adapter_type, adapter_name, config)
                         adapters.append(adapter)
