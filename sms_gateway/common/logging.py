@@ -1,16 +1,33 @@
 import logging
-from typing import Optional
+from typing import Optional, Union
 from pathlib import Path
+
+# Map string log levels to logging constants
+LOG_LEVELS = {
+    "DEBUG": logging.DEBUG,
+    "INFO": logging.INFO,
+    "WARNING": logging.WARNING,
+    "ERROR": logging.ERROR,
+    "CRITICAL": logging.CRITICAL
+}
 
 class Logger:
     """Logging abstraction that wraps Python's logging module"""
     
-    def __init__(self, name: str, log_level: int = logging.INFO):
+    def __init__(self, name: str, log_level: Union[str, int] = None):
         self.logger = logging.getLogger(name)
-        self.logger.setLevel(log_level)
         
-        # Create formatters and handlers only if none exist
-        if not self.logger.handlers:
+        # If no level specified, don't set one (will inherit from root)
+        if log_level is not None:
+            # Convert string level to int if needed
+            if isinstance(log_level, str):
+                level = LOG_LEVELS.get(log_level.upper(), logging.INFO)
+            else:
+                level = log_level
+            self.logger.setLevel(level)
+        
+        # Only set up handlers for root logger or if explicitly requested
+        if name == "root" and not self.logger.handlers:
             self._setup_handlers()
     
     def _setup_handlers(self) -> None:

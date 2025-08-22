@@ -1,13 +1,27 @@
 import json
 import os
+import logging
 from pathlib import Path
 from typing import Union
 from pydantic import ValidationError
 
 from sms_gateway.domain.models import SMSGatewayConfig
-from sms_gateway.common.logging import get_logger
+from sms_gateway.common.logging import get_logger, LOG_LEVELS
 
+# Initialize with default level, will be updated after config load
 logger = get_logger("config")
+
+def _update_root_logger(config: SMSGatewayConfig) -> None:
+    """Update root logger with configured log level"""
+    # Initialize root logger first
+    root_logger = get_logger("root")
+    
+    # Get the log level from config
+    level = LOG_LEVELS.get(config.runtime.log_level.upper(), logging.INFO)
+    
+    # Set the root logger's level
+    logging.getLogger().setLevel(level)
+    logger.info(f"Set root logger level to {config.runtime.log_level}")
 
 def load_config(config_path: Union[str, Path]) -> SMSGatewayConfig:
     """
@@ -36,6 +50,9 @@ def load_config(config_path: Union[str, Path]) -> SMSGatewayConfig:
             
         # Parse and validate config
         config = SMSGatewayConfig.model_validate(config_data)
+        
+        # Update logging level first
+        _update_root_logger(config)
         
         logger.info(f"Loaded configuration from {config_path}")
         logger.debug(f"Config: {config.model_dump_json(indent=2)}")

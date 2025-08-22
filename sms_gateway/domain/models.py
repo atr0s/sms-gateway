@@ -76,6 +76,10 @@ class RuntimeConfig(BaseModel):
         ge=0.1,  # Minimum 100ms delay
         le=60.0  # Maximum 60s delay
     )
+    log_level: str = Field(
+        default="INFO",
+        description="Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)"
+    )
 
 class SMSGatewayConfig(BaseModel):
     """Top level configuration for the SMS Gateway"""
