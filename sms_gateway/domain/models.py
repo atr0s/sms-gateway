@@ -1,6 +1,8 @@
-from typing import List, Literal
+from typing import List, Literal, Optional
 from pydantic import BaseModel, Field, ConfigDict
 from enum import Enum
+from datetime import datetime
+from .backoff import BackoffConfig
 
 class MessageType(Enum):
     SMS = "sms"
@@ -17,6 +19,9 @@ class Message(BaseModel):
     sender: str = Field(description="Sender identifier (phone number, email, etc)")
     priority: int = Field(default=0, description="Message priority (0 = normal, 1 = high)")
     retry_count: int = Field(default=0, description="Number of retry attempts for failed message delivery")
+    last_retry_timestamp: Optional[datetime] = Field(default=None, description="Timestamp of the last retry attempt")
+    next_retry_at: Optional[datetime] = Field(default=None, description="When to attempt the next retry")
+    backoff_strategy: str = Field(default="exponential", description="Backoff strategy to use (exponential or linear)")
     
 class BaseConfig(BaseModel):
     enabled: bool = Field(default=True, description="Whether this service is enabled")
@@ -79,6 +84,10 @@ class RuntimeConfig(BaseModel):
     log_level: str = Field(
         default="INFO",
         description="Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)"
+    )
+    backoff: BackoffConfig = Field(
+        default_factory=BackoffConfig,
+        description="Retry backoff configuration"
     )
 
 class SMSGatewayConfig(BaseModel):
