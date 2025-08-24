@@ -16,7 +16,7 @@ class Logger:
     
     def __init__(self, name: str, log_level: Union[str, int] = None):
         self.logger = logging.getLogger(name)
-        
+        logging.getLogger("httpx").setLevel(logging.WARNING)
         # If no level specified, don't set one (will inherit from root)
         if log_level is not None:
             # Convert string level to int if needed
