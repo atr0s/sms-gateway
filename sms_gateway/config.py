@@ -12,16 +12,29 @@ from sms_gateway.common.logging import get_logger, LOG_LEVELS
 logger = get_logger("config")
 
 def _update_root_logger(config: SMSGatewayConfig) -> None:
-    """Update root logger with configured log level"""
+    """Update root logger and component loggers with configured levels"""
     # Initialize root logger first
     root_logger = get_logger("root")
     
-    # Get the log level from config
-    level = LOG_LEVELS.get(config.runtime.log_level.upper(), logging.INFO)
+    # For backwards compatibility, if component-specific levels exist,
+    # use logging.default, otherwise fallback to the top-level log_level
+    if config.runtime.logging.components:
+        default_level = config.runtime.logging.default
+    else:
+        default_level = config.runtime.log_level
+    
+    # Get the default level
+    level = LOG_LEVELS.get(default_level.upper(), logging.INFO)
     
     # Set the root logger's level
     logging.getLogger().setLevel(level)
-    logger.info(f"Set root logger level to {config.runtime.log_level}")
+    logger.info(f"Set root logger level to {default_level}")
+    
+    # Configure component-specific levels
+    for component, level_str in config.runtime.logging.components.items():
+        level = LOG_LEVELS.get(level_str.upper(), logging.INFO)
+        logging.getLogger(component).setLevel(level)
+        logger.info(f"Set {component} logger level to {level_str}")
 
 def load_config(config_path: Union[str, Path]) -> SMSGatewayConfig:
     """

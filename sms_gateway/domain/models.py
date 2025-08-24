@@ -49,6 +49,17 @@ class AdapterConfig(BaseModel):
     gammu: List[GammuConfig] | None = Field(default=None, description="List of Gammu modem adapters")
     stub: List[StubConfig] | None = Field(default=None, description="List of stub adapters")
 
+class LoggingComponentConfig(BaseModel):
+    """Component-specific logging configuration"""
+    default: str = Field(
+        default="INFO",
+        description="Default logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)"
+    )
+    components: dict[str, str] = Field(
+        default_factory=dict,
+        description="Component-specific log levels"
+    )
+    
 class RuntimeConfig(BaseModel):
     """Runtime configuration for the gateway"""
     poll_delay: float = Field(
@@ -59,7 +70,11 @@ class RuntimeConfig(BaseModel):
     )
     log_level: str = Field(
         default="INFO",
-        description="Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)"
+        description="Legacy logging level (for backwards compatibility)"
+    )
+    logging: LoggingComponentConfig = Field(
+        default_factory=LoggingComponentConfig,
+        description="Logging configuration"
     )
     backoff: BackoffConfig = Field(
         default_factory=BackoffConfig,

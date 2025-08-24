@@ -16,7 +16,12 @@ class Logger:
     
     def __init__(self, name: str, log_level: Union[str, int] = None):
         self.logger = logging.getLogger(name)
-        # If no level specified, don't set one (will inherit from root)
+        
+        # Get existing logger to maintain any component-specific settings
+        existing_logger = logging.getLogger(name)
+        
+        # Only set level if explicitly provided, otherwise keep existing
+        # This preserves component-specific levels set via config
         if log_level is not None:
             # Convert string level to int if needed
             if isinstance(log_level, str):
@@ -24,7 +29,7 @@ class Logger:
             else:
                 level = log_level
             self.logger.setLevel(level)
-        
+            
         # Only set up handlers for root logger or if explicitly requested
         if name == "root" and not self.logger.handlers:
             self._setup_handlers()
