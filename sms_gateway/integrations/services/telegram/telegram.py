@@ -9,13 +9,11 @@ from telegram.ext import (
     filters
 )
 
-from sms_gateway.domain.models import (
-    Message, MessageType, Destination,
-    TelegramConfig
-)
+from sms_gateway.domain.models import Message, MessageType, Destination
+from sms_gateway.integrations.config import TelegramConfig
 from sms_gateway.ports.messaging import MessagingPort
 from sms_gateway.common.logging import get_logger
-from sms_gateway.adapters.services.registry import AdapterRegistry, AdapterType
+from sms_gateway.integrations.services.registry import AdapterRegistry, AdapterType
 
 PHONE_PATTERN = re.compile(r'^\+?\d{3,15}$')
 SMS_COMMAND_PATTERN = re.compile(r'^/sms\s+(\+?\d+)\s+"([^"]+)"$')

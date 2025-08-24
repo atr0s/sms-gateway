@@ -16,12 +16,16 @@ Located in `sms_gateway/domain/models.py`:
   - Core fields: content, sender, destinations, priority
   - retry_count: Tracks number of failed delivery attempts for better retry handling
 - `Destination`: Defines a message destination with type and address
-- `BaseConfig`: Base configuration for all services
+- `SMSGatewayConfig`: Top level configuration for the SMS Gateway
+
+Located in `sms_gateway/integrations/config/`:
+
+- `base.py`: Contains `BaseConfig`, the base configuration for all services
 - Service-specific configs:
-  - `TelegramConfig`
-  - `EmailConfig`
-  - `GammuConfig`
-  - `SMSGatewayConfig`
+  - `telegram.py`: `TelegramConfig` for Telegram integration
+  - `gammu.py`: `GammuConfig` for GSM modem integration
+  - `stub.py`: `StubConfig` for testing
+  - Future: `email.py`: `EmailConfig` for email integration
 
 ### Ports (Interfaces)
 

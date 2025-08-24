@@ -1,5 +1,6 @@
 from typing import Protocol, List
-from sms_gateway.domain.models import Message, TelegramConfig
+from sms_gateway.domain.models import Message
+from sms_gateway.integrations.services.telegram.config import TelegramConfig
 from sms_gateway.ports.messaging import MessagingPort
 
 class TelegramPort(MessagingPort, Protocol):

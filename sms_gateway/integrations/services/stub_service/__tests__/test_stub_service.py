@@ -1,7 +1,8 @@
 import pytest
 import pytest_asyncio
-from sms_gateway.domain.models import Message, Destination, MessageType, StubConfig
-from sms_gateway.adapters.services.stub_service import StubSmsService
+from sms_gateway.domain.models import Message, Destination, MessageType
+from sms_gateway.integrations.services.stub_service.config import StubConfig
+from sms_gateway.integrations.services.stub_service.stub_service import StubSmsService
 
 @pytest_asyncio.fixture
 async def stub_service():

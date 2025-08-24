@@ -3,6 +3,9 @@ from pydantic import BaseModel, Field, ConfigDict
 from enum import Enum
 from datetime import datetime
 from .backoff import BackoffConfig
+from sms_gateway.integrations.config import (
+    BaseConfig, TelegramConfig, GammuConfig, StubConfig
+)
 
 class MessageType(Enum):
     SMS = "sms"
@@ -22,16 +25,6 @@ class Message(BaseModel):
     last_retry_timestamp: Optional[datetime] = Field(default=None, description="Timestamp of the last retry attempt")
     next_retry_at: Optional[datetime] = Field(default=None, description="When to attempt the next retry")
     backoff_strategy: str = Field(default="exponential", description="Backoff strategy to use (exponential or linear)")
-    
-class BaseConfig(BaseModel):
-    enabled: bool = Field(default=True, description="Whether this service is enabled")
-    name: str = Field(description="Service identifier name")
-
-class TelegramConfig(BaseConfig):
-    bot_token: str = Field(description="Telegram bot API token")
-    api_base_url: str = Field(default="https://api.telegram.org", description="Telegram API base URL")
-    chat_id: str = Field(description="The Telegram Chat ID")
-    name: str = Field(description='Descriptive name for the integration')
 
 class EmailConfig(BaseConfig):
     smtp_host: str = Field(description="SMTP server hostname")
@@ -40,23 +33,6 @@ class EmailConfig(BaseConfig):
     password: str = Field(description="SMTP auth password")
     use_tls: bool = Field(default=True, description="Whether to use TLS")
     from_address: str = Field(description="Default sender email address")
-
-class GammuConfig(BaseConfig):
-    port: str = Field(description="Serial port for the modem device")
-    connection: str = Field(default="at115200", description="Connection type and speed (e.g. at115200)")
-
-class StubConfig(BaseConfig):
-    message_probability: float = Field(
-        default=0.1,
-        description="Probability of generating a message (0.0 to 1.0)",
-        ge=0.0,
-        le=1.0
-    )
-    delay: float = Field(
-        default=1.0,
-        description="Delay between message generation attempts in seconds",
-        ge=0.1
-    )
 
 class QueueConfig(BaseModel):
     type: Literal["memory"] = Field(description="Type of queue to use")

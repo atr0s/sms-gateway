@@ -11,7 +11,7 @@ from sms_gateway.common.logging import get_logger
 from sms_gateway.config import load_config, get_default_config_path
 from sms_gateway.services.sms import SMSService
 from sms_gateway.services.integration import IntegrationService
-from sms_gateway.adapters.services.registry import AdapterRegistry, AdapterType
+from sms_gateway.integrations.services.registry import AdapterRegistry, AdapterType
 
 class SMSGatewayDaemon:
     """

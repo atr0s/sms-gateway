@@ -4,11 +4,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from telegram import Update
 from telegram.ext import Application, ContextTypes
 
-from sms_gateway.domain.models import (
-    Message, MessageType, Destination,
-    TelegramConfig
-)
-from sms_gateway.adapters.services.telegram import TelegramAdapter
+from sms_gateway.domain.models import Message, MessageType, Destination
+from sms_gateway.integrations.services.telegram.config import TelegramConfig
+from sms_gateway.integrations.services.telegram.telegram import TelegramAdapter
 
 @pytest.fixture
 def telegram_config() -> TelegramConfig:
