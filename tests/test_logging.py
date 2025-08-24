@@ -5,7 +5,6 @@ import logging
 
 from sms_gateway.common.logging import get_logger, LOG_LEVELS
 from sms_gateway.config import load_config
-from sms_gateway.domain.models import SMSGatewayConfig, RuntimeConfig
 
 def test_default_log_level(tmp_path):
     """Test that log level defaults to INFO when not specified"""
