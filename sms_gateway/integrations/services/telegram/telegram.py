@@ -10,7 +10,7 @@ from telegram.ext import (
 )
 
 from sms_gateway.domain.models import Message, MessageType, Destination
-from sms_gateway.integrations.config import TelegramConfig
+from .config import TelegramConfig
 from sms_gateway.ports.messaging import MessagingPort
 from sms_gateway.common.logging import get_logger
 from sms_gateway.integrations.services.registry import AdapterRegistry, AdapterType

@@ -1,7 +1,7 @@
 from typing import Optional
 from gammu import StateMachine, EncodeSMS
 from sms_gateway.domain.models import Message
-from sms_gateway.integrations.config import GammuConfig
+from .config import GammuConfig
 from sms_gateway.ports.messaging import MessagingPort
 from sms_gateway.integrations.services.registry import AdapterRegistry, AdapterType
 from sms_gateway.common.logging import get_logger
