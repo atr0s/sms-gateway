@@ -9,7 +9,7 @@ from telegram.ext import (
     filters
 )
 
-from sms_gateway.domain.models import Message, MessageType, Destination
+from sms_gateway.domain.messaging import Message, MessageType, Destination
 from .config import TelegramConfig
 from sms_gateway.ports.messaging import MessagingPort
 from sms_gateway.common.logging import get_logger

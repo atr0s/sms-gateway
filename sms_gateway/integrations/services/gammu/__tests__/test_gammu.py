@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import AsyncMock, patch, MagicMock
 
-from sms_gateway.domain.models import Message, Destination, MessageType
+from sms_gateway.domain.messaging import Message, Destination, MessageType
 from sms_gateway.integrations.services.gammu.config import GammuConfig
 from sms_gateway.integrations.services.gammu.adapter import GammuAdapter
 

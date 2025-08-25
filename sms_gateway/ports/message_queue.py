@@ -1,5 +1,5 @@
 from typing import Protocol, Iterator
-from sms_gateway.domain.models import Message
+from sms_gateway.domain.messaging import Message
 
 class MessageQueuePort(Protocol):
     async def enqueue(self, message: Message) -> None:

@@ -1,6 +1,6 @@
 import random
 from typing import Optional
-from sms_gateway.domain.models import Message, Destination, MessageType
+from sms_gateway.domain.messaging import Message, Destination, MessageType
 from .config import StubConfig
 from sms_gateway.ports.messaging import MessagingPort
 from sms_gateway.integrations.services.registry import AdapterRegistry, AdapterType

@@ -1,6 +1,6 @@
 import pytest
 from datetime import datetime, timedelta
-from sms_gateway.domain.models import Message, Destination, MessageType
+from sms_gateway.domain.messaging import Message, Destination, MessageType
 from sms_gateway.domain.backoff import (
     BackoffConfig,
     ExponentialBackoff,

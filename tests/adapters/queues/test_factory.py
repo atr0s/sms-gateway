@@ -1,5 +1,5 @@
 import pytest
-from sms_gateway.domain.models import QueueConfig
+from sms_gateway.domain.config.queue import QueueConfig
 from sms_gateway.adapters.queues.factory import create_queue
 from sms_gateway.adapters.queues.memory import AsyncInMemoryMessageQueue
 

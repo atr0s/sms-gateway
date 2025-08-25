@@ -1,6 +1,6 @@
 import asyncio
 from typing import AsyncIterator
-from sms_gateway.domain.models import Message
+from sms_gateway.domain.messaging import Message
 from sms_gateway.ports.message_queue import MessageQueuePort
 from sms_gateway.common.logging import get_logger
 

@@ -2,7 +2,7 @@ from typing import List, Dict, Type
 from datetime import datetime
 from sms_gateway.ports.messaging import MessagingPort
 from sms_gateway.ports.message_queue import MessageQueuePort
-from sms_gateway.domain.models import Message
+from sms_gateway.domain.messaging import Message
 from sms_gateway.common.logging import get_logger
 from sms_gateway.domain.backoff import (
     BackoffStrategy,

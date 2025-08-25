@@ -1,5 +1,5 @@
 from sms_gateway.ports.message_queue import MessageQueuePort
-from sms_gateway.domain.models import QueueConfig
+from sms_gateway.domain.config import QueueConfig
 from sms_gateway.adapters.queues.memory import AsyncInMemoryMessageQueue
 
 

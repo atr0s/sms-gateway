@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Union
 from pydantic import ValidationError
 
-from sms_gateway.domain.models import SMSGatewayConfig
+from sms_gateway.domain.config import SMSGatewayConfig
 from sms_gateway.common.logging import get_logger, LOG_LEVELS
 
 # Initialize with default level, will be updated after config load

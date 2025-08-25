@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from sms_gateway.domain.models import BaseConfig
+from sms_gateway.domain.config.adapters import BaseConfig
 
 class StubConfig(BaseConfig):
     message_probability: float = Field(

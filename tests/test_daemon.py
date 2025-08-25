@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch, AsyncMock
 from pathlib import Path
 
 from sms_gateway.daemon import SMSGatewayDaemon, async_main, main
-from sms_gateway.domain.models import SMSGatewayConfig, QueueConfig, RuntimeConfig, AdapterConfig, MessageProcessingConfig
+from sms_gateway.domain.config import SMSGatewayConfig, QueueConfig, RuntimeConfig, AdapterConfig, MessageProcessingConfig
 from sms_gateway.ports.messaging import MessagingPort
 from sms_gateway.ports.message_queue import MessageQueuePort
 

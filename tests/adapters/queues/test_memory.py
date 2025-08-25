@@ -2,7 +2,7 @@ import pytest
 import asyncio
 from datetime import datetime, timezone
 from typing import AsyncIterator, List
-from sms_gateway.domain.models import Message, MessageType, Destination
+from sms_gateway.domain.messaging import Message, MessageType, Destination
 from sms_gateway.adapters.queues.memory import (
     AsyncInMemoryMessageQueue,
     QueueFullError,

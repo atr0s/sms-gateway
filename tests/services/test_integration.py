@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import Mock, AsyncMock
 from sms_gateway.services.integration import IntegrationService
-from sms_gateway.domain.models import Message, Destination, MessageType
+from sms_gateway.domain.messaging import Message, Destination, MessageType
 
 @pytest.fixture
 def mock_port():

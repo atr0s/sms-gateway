@@ -5,7 +5,7 @@ from pathlib import Path
 
 from sms_gateway.ports.messaging import MessagingPort
 from sms_gateway.ports.message_queue import MessageQueuePort
-from sms_gateway.domain.models import SMSGatewayConfig
+from sms_gateway.domain.config.base import SMSGatewayConfig
 from sms_gateway.adapters.queues.factory import create_queue
 from sms_gateway.common.logging import get_logger
 from sms_gateway.config import load_config, get_default_config_path

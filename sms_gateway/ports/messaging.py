@@ -1,5 +1,6 @@
 from typing import Protocol, Iterator, Optional
-from sms_gateway.domain.models import Message, BaseConfig
+from sms_gateway.domain.messaging import Message
+from sms_gateway.integrations.config import BaseConfig
 
 class MessagingPort(Protocol):
     """Base protocol for all messaging services"""
