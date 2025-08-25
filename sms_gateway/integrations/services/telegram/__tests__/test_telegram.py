@@ -6,7 +6,7 @@ from telegram.ext import Application, ContextTypes
 
 from sms_gateway.domain.models import Message, MessageType, Destination
 from sms_gateway.integrations.services.telegram.config import TelegramConfig
-from sms_gateway.integrations.services.telegram.telegram import TelegramAdapter
+from sms_gateway.integrations.services.telegram.adapter import TelegramAdapter
 
 @pytest.fixture
 def telegram_config() -> TelegramConfig:

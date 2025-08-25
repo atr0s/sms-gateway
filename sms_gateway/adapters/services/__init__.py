@@ -8,9 +8,9 @@ them in the correct order after the registry is initialized.
 from sms_gateway.integrations.services.registry import AdapterRegistry, AdapterType
 
 # Then import the adapters to trigger their registration decorators
-from sms_gateway.integrations.services.stub_service.stub_service import StubSmsService
-from sms_gateway.integrations.services.telegram.telegram import TelegramAdapter
-from sms_gateway.integrations.services.gammu.gammu import GammuAdapter
+from sms_gateway.integrations.services.stub_service.adapter import StubSmsService
+from sms_gateway.integrations.services.telegram.adapter import TelegramAdapter
+from sms_gateway.integrations.services.gammu.adapter import GammuAdapter
 
 # Register all available adapters and types
 __all__ = [

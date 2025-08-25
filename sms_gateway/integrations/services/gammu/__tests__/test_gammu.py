@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock, patch, MagicMock
 
 from sms_gateway.domain.models import Message, Destination, MessageType
 from sms_gateway.integrations.services.gammu.config import GammuConfig
-from sms_gateway.integrations.services.gammu.gammu import GammuAdapter
+from sms_gateway.integrations.services.gammu.adapter import GammuAdapter
 
 @pytest.fixture
 def gammu_config() -> GammuConfig:
@@ -23,7 +23,7 @@ def gammu_adapter() -> GammuAdapter:
 @pytest.mark.asyncio(scope="function")
 async def test_initialize(gammu_adapter: GammuAdapter, gammu_config: GammuConfig):
     """Test Gammu initialization"""
-    with patch('sms_gateway.integrations.services.gammu.gammu.StateMachine') as mock_sm_class:
+    with patch('sms_gateway.integrations.services.gammu.adapter.StateMachine') as mock_sm_class:
         # Setup mock
         mock_sm = MagicMock()
         mock_sm_class.return_value = mock_sm
@@ -44,7 +44,7 @@ async def test_initialize(gammu_adapter: GammuAdapter, gammu_config: GammuConfig
 @pytest.mark.asyncio(scope="function")
 async def test_initialize_error(gammu_adapter: GammuAdapter, gammu_config: GammuConfig):
     """Test initialization failure"""
-    with patch('sms_gateway.integrations.services.gammu.gammu.StateMachine') as mock_sm_class:
+    with patch('sms_gateway.integrations.services.gammu.adapter.StateMachine') as mock_sm_class:
         # Setup mock to raise error
         mock_sm = MagicMock()
         mock_sm.Init.side_effect = Exception("Failed to initialize")
@@ -57,7 +57,7 @@ async def test_initialize_error(gammu_adapter: GammuAdapter, gammu_config: Gammu
 @pytest.mark.asyncio(scope="function")
 async def test_shutdown(gammu_adapter: GammuAdapter):
     """Test adapter shutdown"""
-    with patch('sms_gateway.integrations.services.gammu.gammu.StateMachine') as mock_sm_class:
+    with patch('sms_gateway.integrations.services.gammu.adapter.StateMachine') as mock_sm_class:
         # Setup mock
         mock_sm = MagicMock()
         mock_sm_class.return_value = mock_sm
