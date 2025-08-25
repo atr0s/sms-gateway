@@ -26,14 +26,6 @@ class Message(BaseModel):
     next_retry_at: Optional[datetime] = Field(default=None, description="When to attempt the next retry")
     backoff_strategy: str = Field(default="exponential", description="Backoff strategy to use (exponential or linear)")
 
-class EmailConfig(BaseConfig):
-    smtp_host: str = Field(description="SMTP server hostname")
-    smtp_port: int = Field(description="SMTP server port")
-    username: str = Field(description="SMTP auth username")
-    password: str = Field(description="SMTP auth password")
-    use_tls: bool = Field(default=True, description="Whether to use TLS")
-    from_address: str = Field(description="Default sender email address")
-
 class QueueConfig(BaseModel):
     type: Literal["memory"] = Field(description="Type of queue to use")
     maxsize: int = Field(default=1000, description="Maximum size of the queue")
@@ -45,7 +37,6 @@ class MessageProcessingConfig(BaseModel):
 class AdapterConfig(BaseModel):
     """Configuration for message adapters (input/output)"""
     telegram: List[TelegramConfig] | None = Field(default=None, description="List of Telegram adapters")
-    email: List[EmailConfig] | None = Field(default=None, description="List of Email adapters")
     gammu: List[GammuConfig] | None = Field(default=None, description="List of Gammu modem adapters")
     stub: List[StubConfig] | None = Field(default=None, description="List of stub adapters")
 
