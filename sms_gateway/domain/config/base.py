@@ -15,3 +15,7 @@ class SMSGatewayConfig(BaseModel):
         default_factory=RuntimeConfig,
         description="Runtime configuration settings"
     )
+
+class BaseConfig(BaseModel):
+    enabled: bool = Field(default=True, description="Whether this service is enabled")
+    name: str = Field(description="Service identifier name")

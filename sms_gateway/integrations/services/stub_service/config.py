@@ -1,7 +1,6 @@
 from pydantic import BaseModel, Field
-from sms_gateway.domain.config.adapters import BaseConfig
 
-class StubConfig(BaseConfig):
+class StubConfig(BaseModel):
     message_probability: float = Field(
         default=0.1,
         description="Probability of generating a message (0.0 to 1.0)",
@@ -13,3 +12,5 @@ class StubConfig(BaseConfig):
         description="Delay between message generation attempts in seconds",
         ge=0.1
     )
+    enabled: bool = Field(default=True, description="Whether this service is enabled")
+    name: str = Field(description="Service identifier name")
