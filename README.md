@@ -75,34 +75,57 @@ Press Ctrl+C to stop the daemon.
 
 ## Configuration
 
-The gateway can be configured through a JSON configuration file:
+The gateway is configured through a JSON configuration file with the following structure:
 
 ```json
 {
-  "queue_size": 1000,
-  "services": {
-    "sms": {
+  "name": "sms-gateway",
+  "queues": {
+    "sms_queue": {
+      "type": "memory",
+      "maxsize": 1000
+    },
+    "integration_queue": {
+      "type": "memory",
+      "maxsize": 1000
+    }
+  },
+  "sms": {
+    "gammu": {
+      "enabled": true,
       "name": "sms",
-      "type": "gammu",
       "port": "/dev/ttyUSB0",
       "connection": "at115200"
-    },
+    }
+  },
+  "integration": {
     "telegram": {
+      "enabled": true,
       "name": "telegram",
-      "type": "bot",
       "token": "your-bot-token"
+    }
+  },
+  "runtime": {
+    "poll_delay": 1.0,
+    "logging": {
+      "default": "INFO",
+      "components": {}
     },
-    "email": {
-      "name": "email",
-      "type": "smtp",
-      "host": "smtp.example.com",
-      "port": 587,
-      "username": "user@example.com",
-      "password": "password"
+    "backoff": {
+      "initial_delay": 1.0,
+      "max_delay": 60.0,
+      "factor": 2.0
     }
   }
 }
 ```
+
+The configuration is split into distinct sections:
+- `name`: Gateway instance identifier
+- `queues`: Message queue settings for SMS and integration services
+- `sms`: SMS service adapters configuration
+- `integration`: Integration service adapters (Telegram, Email, etc.)
+- `runtime`: System-wide settings including logging configuration
 
 ## Testing
 

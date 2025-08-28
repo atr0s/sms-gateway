@@ -20,12 +20,29 @@ Located in `sms_gateway/domain/models.py`:
 
 Located in `sms_gateway/integrations/config/`:
 
-- `base.py`: Contains `BaseConfig`, the base configuration for all services
-- Service-specific configs:
+- `base.py`: Contains `BaseConfig`, the base configuration model with:
+  - enabled: Determines if service is active
+  - name: Service identifier
+- Service-specific configs inherit from BaseConfig:
   - `telegram.py`: `TelegramConfig` for Telegram integration
   - `gammu.py`: `GammuConfig` for GSM modem integration
   - `stub.py`: `StubConfig` for testing
-  - Future: `email.py`: `EmailConfig` for email integration
+  - `email.py`: `EmailConfig` for email integration (planned)
+
+### Configuration System
+
+Located in `sms_gateway/domain/config/`:
+
+1. Runtime Configuration:
+   - `runtime.py`: System-wide settings including logging
+   - `queue.py`: Message queue settings and behavior
+   - `adapters.py`: Service adapter configurations
+
+2. Registry System (`sms_gateway/common/registry.py`):
+   - `AdapterType`: Enum defining supported adapter categories (SMS, INTEGRATION)
+   - `AdapterRegistry`: Central registry for all messaging adapters
+   - Factory pattern for creating adapter instances
+   - Type-safe adapter management and initialization
 
 ### Ports (Interfaces)
 
@@ -130,24 +147,29 @@ Service implementations extend the base MessageService:
 
 ## Queue System
 
-The queue system is built around a factory pattern for creating message queues. The implementation is split into two main components:
+The queue system provides message routing and storage between services. Implementation consists of:
 
-1. Queue Factory:
-   - Located in `sms_gateway/adapters/queues/factory.py`
-   - Creates queue instances based on configuration
-   - Supports different queue types (currently in-memory)
-   - Extensible for future queue implementations
+1. Queue Factory (`sms_gateway/adapters/queues/factory.py`):
+   - Creates strongly-typed queue instances
+   - Supports configurable queue types
+   - Validates queue configuration
+   - Extensible for new implementations
 
-2. Memory Queue Implementation:
-   - Located in `sms_gateway/adapters/queues/memory.py`
-   - Based on `asyncio.Queue`
+2. Memory Queue (`sms_gateway/adapters/queues/memory.py`):
+   - Async implementation using `asyncio.Queue`
    - Features:
-     - Asynchronous message handling
-     - Configurable queue size
+     - Configurable size limits
      - Non-blocking operations
-     - Size monitoring
-     - Empty/full state detection
-     - Error handling for edge cases
+     - Queue metrics tracking
+     - Back-pressure handling
+     - Comprehensive error handling
+     - Message persistence (optional)
+
+3. Queue Configuration (`sms_gateway/domain/config/queue.py`):
+   - Separate configs for SMS and integration queues
+   - Size and behavior settings
+   - Message retention policies
+   - Error handling configuration
 
 ## Message Flow Details
 
@@ -174,15 +196,21 @@ The queue system is built around a factory pattern for creating message queues. 
    f. Delivery attempt with retry logic
 
 3. Error Handling:
-    - Port failures trigger retries with strict limits:
-      - Maximum 5 retry attempts per message
-      - Retry count tracked in Message model
-      - Messages discarded after max retries reached
-      - Detailed logging of retry attempts and final failures
-    - Messages track failed delivery attempts for retry management
-    - Queue overflow protection
-    - Logging at each step with retry attempt information
-    - Error reporting to monitoring
+     - Comprehensive retry system:
+       - Configurable retry limits per message type
+       - Exponential backoff with jitter
+       - Per-message retry tracking
+       - Failed message handling policies
+     - Detailed error reporting:
+       - Structured logging with context
+       - Error aggregation and monitoring
+       - Queue health metrics
+       - System status monitoring
+     - Failure recovery:
+       - Message persistence across restarts
+       - Queue overflow protection
+       - Circuit breakers for failing services
+       - Graceful degradation strategies
 
 This architecture provides:
 - Clean separation of concerns
