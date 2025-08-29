@@ -1,6 +1,6 @@
 # SMS Gateway Daemon
 
-A Python daemon that handles bi-directional message routing between SMS, Telegram, and Email services.
+A Python daemon that handles bi-directional message routing between SMS and Telegram services.
 
 ## Requirements
 
@@ -124,7 +124,7 @@ The configuration is split into distinct sections:
 - `name`: Gateway instance identifier
 - `queues`: Message queue settings for SMS and integration services
 - `sms`: SMS service adapters configuration
-- `integration`: Integration service adapters (Telegram, Email, etc.)
+- `integration`: Integration service adapters (Telegram, etc.)
 - `runtime`: System-wide settings including logging configuration
 
 ## Testing
@@ -171,7 +171,7 @@ The gateway implements a message broker pattern with:
 
 1. Message Services
    - Base message handling service
-   - Protocol-specific services (SMS, Telegram, Email)
+   - Protocol-specific services (SMS, Telegram)
    - Bi-directional message routing
 
 2. Message Queues

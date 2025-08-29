@@ -27,8 +27,6 @@ Located in `sms_gateway/integrations/config/`:
   - `telegram.py`: `TelegramConfig` for Telegram integration
   - `gammu.py`: `GammuConfig` for GSM modem integration
   - `stub.py`: `StubConfig` for testing
-  - `email.py`: `EmailConfig` for email integration (planned)
-
 ### Configuration System
 
 Located in `sms_gateway/domain/config/`:
@@ -69,11 +67,6 @@ Located in `sms_gateway/ports/protocols/`:
   - File sending support
   - Bot status monitoring
 
-- `EmailPort`: Email messaging capabilities
-  - SMTP server management
-  - Attachment support
-  - Connection verification
-
 #### Message Queue Port
 Located in `sms_gateway/ports/message_queue.py`:
 - `MessageQueuePort`: Interface for message queue operations
@@ -90,11 +83,9 @@ graph TD
     
     C --> D[SMS Port]
     C --> E[Telegram Port]
-    C --> F[Email Port]
     
     D --> G[Gammu Modem]
     E --> H[Telegram API]
-    F --> I[SMTP Server]
     
     B --> J[Queue Implementation]
 ```
@@ -139,11 +130,6 @@ Service implementations extend the base MessageService:
    - Manages bot sessions
    - Handles chat updates
    - Supports media messages
-
-3. Email Service:
-   - Manages SMTP connections
-   - Handles attachments
-   - Supports HTML content
 
 ## Queue System
 
