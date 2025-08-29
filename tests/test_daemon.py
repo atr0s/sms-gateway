@@ -20,14 +20,12 @@ def config():
         sms=AdapterConfig(
             stub=[{"name": "stub1"}],
             gammu=None,
-            telegram=None,
-            email=None
+            telegram=None
         ),
         integration=AdapterConfig(
             telegram=None,
             stub=None,
-            gammu=None,
-            email=None
+            gammu=None
         )
     )
 
@@ -150,8 +148,8 @@ async def test_async_main_valid_config():
             sms_queue=QueueConfig(type="memory", maxsize=100),
             integration_queue=QueueConfig(type="memory", maxsize=100)
         ),
-        sms=AdapterConfig(stub=None, gammu=None, telegram=None, email=None),
-        integration=AdapterConfig(telegram=None, stub=None, gammu=None, email=None)
+        sms=AdapterConfig(stub=None, gammu=None, telegram=None),
+        integration=AdapterConfig(telegram=None, stub=None, gammu=None)
     )
 
     with patch('argparse.ArgumentParser.parse_args') as mock_args, \

@@ -23,8 +23,7 @@ def test_message():
     return Message(
         content="Test SMS message",
         destinations=[
-            Destination(type=MessageType.TELEGRAM, address="chat123"),
-            Destination(type=MessageType.EMAIL, address="test@example.com")
+            Destination(type=MessageType.TELEGRAM, address="chat123")
         ],
         sender="+1234567890"
     )
